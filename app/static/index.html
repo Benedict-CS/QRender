@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QRender</title>
+  <style>
+    :root {
+      --bg: #0c0f14;
+      --surface: #151a22;
+      --surface2: #1c2330;
+      --border: #2a3444;
+      --text: #e8edf5;
+      --muted: #8b98ad;
+      --accent: #5b8cff;
+      --accent2: #3d6fd9;
+      --ok: #4ade80;
+      --err: #f87171;
+      --radius: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: radial-gradient(1200px 600px at 10% -10%, #1a2340 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .shell { max-width: 1080px; margin: 0 auto; padding: 28px 20px 48px; }
+    header { margin-bottom: 22px; }
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    header p { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.5; }
+    .muted { color: var(--muted); font-size: 0.85rem; line-height: 1.45; margin: 0; }
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+    .card {
+      background: linear-gradient(180deg, var(--surface) 0%, #121722 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 18px 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+    }
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.05rem;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+    .section {
+      border-top: 1px solid var(--border);
+      margin-top: 14px;
+      padding-top: 14px;
+    }
+    .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+    .section-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    label { display: block; margin: 10px 0 6px; font-size: 0.82rem; color: #c7d2e5; }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    input[type="color"] {
+      width: 100%;
+      height: 40px;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+    }
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin: 4px 0 12px;
+      accent-color: var(--accent);
+    }
+    .range-val { color: var(--accent); font-weight: 600; }
+    .framing-editor-wrap {
+      margin-top: 10px;
+      max-width: 340px;
+    }
+    .framing-editor-wrap.hidden { display: none !important; }
+    .crop-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      overflow: hidden;
+      border-radius: 8px;
+      border: none;
+      background: #4a4d54;
+      touch-action: none;
+      cursor: grab;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+    }
+    .crop-frame:active { cursor: grabbing; }
+    .crop-frame img {
+      position: absolute;
+      left: 0;
+      top: 0;
+      max-width: none;
+      user-select: none;
+      pointer-events: none;
+    }
+    /* Circular “hole” + dim outside (avatar-crop style) */
+    .crop-circle-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .crop-circle-overlay::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 86%;
+      aspect-ratio: 1;
+      border-radius: 4px;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.58);
+      border: 2px solid rgba(255, 255, 255, 0.92);
+      box-sizing: border-box;
+    }
+    .crop-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin: 6px 0 0;
+      line-height: 1.4;
+    }
+    .zoom-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .zoom-toolbar .zoom-ico {
+      flex: 0 0 auto;
+      font-size: 0.95rem;
+      color: var(--muted);
+      user-select: none;
+      width: 1.4rem;
+      text-align: center;
+      line-height: 1;
+    }
+    .zoom-toolbar input[type="range"] {
+      flex: 1;
+      margin: 0;
+    }
+    .row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .toggle input { width: auto; accent-color: var(--accent); }
+    .toggle span { font-size: 0.88rem; color: #dbe4f5; }
+    .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    button.primary {
+      flex: 1;
+      min-width: 140px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 11px;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+      color: white;
+      font-weight: 650;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    button.primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.ghost {
+      padding: 12px 16px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 550;
+    }
+    .status {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+    .status.live { color: var(--ok); }
+    .error { color: var(--err); font-size: 0.85rem; margin-top: 10px; white-space: pre-wrap; }
+    .preview-wrap {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: repeating-conic-gradient(#121722 0% 25%, #0f141c 0% 50%) 50% / 24px 24px;
+      min-height: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .preview-wrap img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+    }
+    .preview-placeholder { color: var(--muted); font-size: 0.9rem; text-align: center; padding: 24px; }
+    .decode-check {
+      margin: 14px 0 0;
+      font-size: 0.88rem;
+      line-height: 1.45;
+      min-height: 1.35em;
+    }
+    .decode-check--ok { color: var(--ok); font-weight: 600; }
+    .decode-check--warn { color: var(--err); font-weight: 600; }
+    .decode-check--muted { color: var(--muted); font-weight: 400; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1>QRender</h1>
+      <p>Photo <strong>micro-dot</strong> QR: your image stays visible; data is tiny dots. Use a full <strong>https://</strong> link so phones open the browser when scanned.</p>
+    </header>
+
+    <div class="layout">
+      <div class="card">
+        <h2>Controls</h2>
+
+        <div class="section">
+          <div class="section-title">QR</div>
+          <label for="content">Link or text</label>
+          <input
+            id="content"
+            type="text"
+            value="https://example.com"
+            placeholder="https://…"
+          />
+          <div class="toggle" style="margin-top:10px">
+            <input type="checkbox" id="use_short_url" />
+            <span>Use short link (simpler QR) — encodes <code>/s/…</code> on this server, then redirects to the URL above</span>
+          </div>
+          <p id="shortUrlNote" class="muted" style="margin-top:8px; min-height:1.2em;"></p>
+          <div class="row2">
+            <div>
+              <label for="box_size">Module size (pixels)</label>
+              <input id="box_size" type="number" min="4" max="32" value="12" />
+            </div>
+            <div>
+              <label for="border">Quiet zone (modules)</label>
+              <input id="border" type="number" min="1" max="8" value="2" />
+            </div>
+          </div>
+
+          <label for="finder_shape">Finder shape (corner markers)</label>
+          <select id="finder_shape">
+            <option value="square" selected>Square (standard)</option>
+            <option value="circle">Circle (bullseye)</option>
+          </select>
+          <div class="row2" style="margin-top:10px">
+            <div>
+              <label for="finder_dark_color">Finder dark</label>
+              <input id="finder_dark_color" type="color" value="#000000" />
+            </div>
+            <div>
+              <label for="finder_light_color">Finder light</label>
+              <input id="finder_light_color" type="color" value="#ffffff" />
+            </div>
+          </div>
+          <p class="muted" style="margin-top:8px;">Finders are drawn solid (not micro-dots) for reliable scanning. Circle: outer ring = Finder dark, center dot = Finder light; the band between and the space outside the ring stay transparent over the photo.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Photo</div>
+          <label for="image">Background image</label>
+          <input id="image" type="file" accept="image/*" />
+
+          <p class="muted" style="margin-top:8px;">Corner finders stay solid for reliable scans. Drag to pan. Slider or scroll: below 100% zooms out (see more picture with white margins); above 100% zooms in.</p>
+
+          <input type="hidden" id="crop_anchor_x" value="50" />
+          <input type="hidden" id="crop_anchor_y" value="50" />
+          <div id="framingEditorWrap" class="framing-editor-wrap hidden">
+            <label style="margin-top:0">Adjust photo</label>
+            <div class="crop-frame" id="cropFrame" title="Drag to pan; slider or wheel to zoom">
+              <img id="cropImg" alt="" />
+              <div class="crop-circle-overlay" aria-hidden="true"></div>
+            </div>
+            <div class="zoom-toolbar">
+              <span class="zoom-ico" title="Zoom out">▢</span>
+              <input type="range" id="cover_zoom" min="50" max="300" value="100" step="5" />
+              <span class="zoom-ico" title="Zoom in">■</span>
+            </div>
+            <p class="crop-hint"><span class="range-val" id="coverZoomVal">100</span>% · White outline matches export shape (square by default).</p>
+          </div>
+
+          <label for="micro_dot_radius_pct">Dot radius <span class="range-val" id="dotSizeLabel">22%</span> of cell</label>
+          <input type="range" id="micro_dot_radius_pct" min="8" max="35" value="22" step="1" />
+
+          <div class="toggle">
+            <input type="checkbox" id="micro_smart_contrast" checked />
+            <span>Sharper dots on busy backgrounds (recommended)</span>
+          </div>
+        </div>
+
+        <div class="toggle">
+          <input type="checkbox" id="livePreview" checked />
+          <span>Live preview</span>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="primary" id="generateBtn">Generate</button>
+          <button type="button" class="ghost" id="downloadBtn" disabled>Download PNG</button>
+          <button type="button" class="ghost" id="resetDefaultsBtn" title="Reset controls">Reset</button>
+        </div>
+        <div class="status" id="status"></div>
+        <div class="error" id="error"></div>
+      </div>
+
+      <div class="card">
+        <h2>Preview</h2>
+        <div class="preview-wrap" id="preview">
+          <div class="preview-placeholder">Upload an image to preview.</div>
+        </div>
+        <p id="decodeCheckEl" class="decode-check decode-check--muted" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const contentEl = document.getElementById("content");
+    const useShortUrlEl = document.getElementById("use_short_url");
+    const shortUrlNote = document.getElementById("shortUrlNote");
+    const boxSizeEl = document.getElementById("box_size");
+    const borderEl = document.getElementById("border");
+    const finderShapeEl = document.getElementById("finder_shape");
+    const finderDarkColorEl = document.getElementById("finder_dark_color");
+    const finderLightColorEl = document.getElementById("finder_light_color");
+    const cropAnchorXEl = document.getElementById("crop_anchor_x");
+    const cropAnchorYEl = document.getElementById("crop_anchor_y");
+    const framingEditorWrap = document.getElementById("framingEditorWrap");
+    const cropFrame = document.getElementById("cropFrame");
+    const cropImg = document.getElementById("cropImg");
+    const coverZoomEl = document.getElementById("cover_zoom");
+    const coverZoomVal = document.getElementById("coverZoomVal");
+    const microDotRadiusPctEl = document.getElementById("micro_dot_radius_pct");
+    const dotSizeLabel = document.getElementById("dotSizeLabel");
+    const microSmartContrastEl = document.getElementById("micro_smart_contrast");
+    const imageEl = document.getElementById("image");
+    const livePreviewEl = document.getElementById("livePreview");
+    const generateBtn = document.getElementById("generateBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const resetDefaultsBtn = document.getElementById("resetDefaultsBtn");
+    const previewEl = document.getElementById("preview");
+    const errorEl = document.getElementById("error");
+    const statusEl = document.getElementById("status");
+    const decodeCheckEl = document.getElementById("decodeCheckEl");
+
+    let currentBlobUrl = null;
+    let debounceTimer = null;
+    let inFlight = false;
+    let cropImgUrl = null;
+    const cropState = { iw: 0, ih: 0, ox: 0, oy: 0, zoom: 1, cw: 280, W: 0, H: 0 };
+    let framingDrag = null;
+
+    function clamp(v, lo, hi) {
+      return Math.max(lo, Math.min(hi, v));
+    }
+    function clamp01(v) {
+      return clamp(v, 0, 1);
+    }
+
+    function syncDotSizeLabel() {
+      dotSizeLabel.textContent = microDotRadiusPctEl.value + "%";
+    }
+
+    function clampPan() {
+      const cw = cropState.cw;
+      const W = cropState.W;
+      const H = cropState.H;
+      if (W >= cw) {
+        cropState.ox = Math.min(0, Math.max(cw - W, cropState.ox));
+      } else {
+        cropState.ox = Math.min(cw - W, Math.max(0, cropState.ox));
+      }
+      if (H >= cw) {
+        cropState.oy = Math.min(0, Math.max(cw - H, cropState.oy));
+      } else {
+        cropState.oy = Math.min(cw - H, Math.max(0, cropState.oy));
+      }
+    }
+
+    function syncAnchorsFromFraming() {
+      const cw = cropState.cw;
+      const W = cropState.W;
+      const H = cropState.H;
+      const ox = cropState.ox;
+      const oy = cropState.oy;
+      let ax;
+      let ay;
+      if (W >= cw) {
+        const lx = Math.max(0, W - cw);
+        ax = lx > 1e-6 ? (-ox) / lx : 0.5;
+      } else {
+        const lx = Math.max(0, cw - W);
+        ax = lx > 1e-6 ? ox / lx : 0.5;
+      }
+      if (H >= cw) {
+        const ly = Math.max(0, H - cw);
+        ay = ly > 1e-6 ? (-oy) / ly : 0.5;
+      } else {
+        const ly = Math.max(0, cw - H);
+        ay = ly > 1e-6 ? oy / ly : 0.5;
+      }
+      cropAnchorXEl.value = String(Math.round(clamp01(ax) * 100));
+      cropAnchorYEl.value = String(Math.round(clamp01(ay) * 100));
+    }
+
+    function layoutFramingEditor(resetCenter) {
+      const iw = cropState.iw;
+      const ih = cropState.ih;
+      if (!iw || !ih) return;
+      const cw = cropFrame.clientWidth || 280;
+      const cw0 = cropState.cw;
+      const W0 = cropState.W;
+      const H0 = cropState.H;
+      const ox0 = cropState.ox;
+      const oy0 = cropState.oy;
+      cropState.zoom = Number(coverZoomEl.value) / 100;
+      const S = Math.max(cw / iw, cw / ih) * cropState.zoom;
+      const W = iw * S;
+      const H = ih * S;
+      cropState.cw = cw;
+      cropState.W = W;
+      cropState.H = H;
+      if (resetCenter) {
+        cropState.ox = (cw - W) / 2;
+        cropState.oy = (cw - H) / 2;
+      } else if (W0 > 1e-6 && H0 > 1e-6 && cw0 > 0) {
+        const u = (cw0 / 2 - ox0) / W0;
+        const v = (cw0 / 2 - oy0) / H0;
+        cropState.ox = cw / 2 - u * W;
+        cropState.oy = cw / 2 - v * H;
+      } else {
+        cropState.ox = (cw - W) / 2;
+        cropState.oy = (cw - H) / 2;
+      }
+      clampPan();
+      cropImg.style.width = W + "px";
+      cropImg.style.height = H + "px";
+      cropImg.style.left = cropState.ox + "px";
+      cropImg.style.top = cropState.oy + "px";
+      syncAnchorsFromFraming();
+    }
+
+    function initFramingFromImage() {
+      const file = imageEl.files && imageEl.files[0];
+      if (!file) {
+        framingEditorWrap.classList.add("hidden");
+        cropState.iw = 0;
+        cropState.ih = 0;
+        return;
+      }
+      framingEditorWrap.classList.remove("hidden");
+      if (cropImgUrl) URL.revokeObjectURL(cropImgUrl);
+      cropImgUrl = URL.createObjectURL(file);
+      cropImg.src = cropImgUrl;
+      const im = new Image();
+      im.onload = () => {
+        cropState.iw = im.naturalWidth;
+        cropState.ih = im.naturalHeight;
+        requestAnimationFrame(() => layoutFramingEditor(true));
+      };
+      im.src = cropImgUrl;
+    }
+
+    new ResizeObserver(() => {
+      if (cropState.iw) layoutFramingEditor(false);
+    }).observe(cropFrame);
+
+    function resetControlsToDefaults() {
+      contentEl.value = "https://example.com";
+      useShortUrlEl.checked = false;
+      shortUrlNote.textContent = "";
+      boxSizeEl.value = "12";
+      borderEl.value = "2";
+      finderShapeEl.value = "square";
+      finderDarkColorEl.value = "#000000";
+      finderLightColorEl.value = "#ffffff";
+      cropAnchorXEl.value = "50";
+      cropAnchorYEl.value = "50";
+      coverZoomEl.value = "100";
+      coverZoomVal.textContent = "100";
+      microDotRadiusPctEl.value = "22";
+      syncDotSizeLabel();
+      microSmartContrastEl.checked = true;
+      livePreviewEl.checked = true;
+      errorEl.textContent = "";
+      if (cropState.iw) {
+        layoutFramingEditor(true);
+      } else {
+        initFramingFromImage();
+      }
+      statusEl.textContent = "Reset";
+      statusEl.classList.add("live");
+      scheduleGenerate("reset");
+    }
+
+    function clearDecodeCheck() {
+      decodeCheckEl.textContent = "";
+      decodeCheckEl.className = "decode-check decode-check--muted";
+    }
+
+    function setDecodeCheckFromHeader(raw) {
+      if (raw == null) {
+        decodeCheckEl.textContent = "Server did not report a scan check (redeploy backend?).";
+        decodeCheckEl.className = "decode-check decode-check--muted";
+        return;
+      }
+      const v = String(raw).toLowerCase();
+      if (v === "true") {
+        decodeCheckEl.textContent = "✅ Scan check: image decodes and matches the encoded payload.";
+        decodeCheckEl.className = "decode-check decode-check--ok";
+        return;
+      }
+      if (v === "false") {
+        decodeCheckEl.textContent =
+          "❌ Scan check: decode failed or payload mismatch. Try a larger dot size, quiet zone, or contrast.";
+        decodeCheckEl.className = "decode-check decode-check--warn";
+        return;
+      }
+      decodeCheckEl.textContent = "";
+      decodeCheckEl.className = "decode-check decode-check--muted";
+    }
+
+    function setPreviewLoading() {
+      if (currentBlobUrl) {
+        URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = null;
+      }
+      previewEl.innerHTML = '<div class="preview-placeholder">Generating…</div>';
+      downloadBtn.disabled = true;
+      clearDecodeCheck();
+    }
+
+    function showPreviewFromBlob(blob) {
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = URL.createObjectURL(blob);
+      previewEl.innerHTML = '<img src="' + currentBlobUrl + '" alt="QR preview" />';
+      downloadBtn.disabled = false;
+    }
+
+    async function generateNow(reason) {
+      errorEl.textContent = "";
+
+      if (!imageEl.files || imageEl.files.length === 0) {
+        if (reason !== "manual") return;
+        errorEl.textContent = "Choose a background image.";
+        return;
+      }
+
+      setPreviewLoading();
+      try {
+        const frac = (Number(microDotRadiusPctEl.value) / 100).toFixed(2);
+        const form = new FormData();
+        form.append("content", contentEl.value);
+        form.append("box_size", boxSizeEl.value);
+        form.append("border", borderEl.value);
+        form.append("crop_anchor_x", (Number(cropAnchorXEl.value) / 100).toFixed(4));
+        form.append("crop_anchor_y", (Number(cropAnchorYEl.value) / 100).toFixed(4));
+        form.append("fit_mode", "cover");
+        form.append("cover_zoom", (Number(coverZoomEl.value) / 100).toFixed(2));
+        form.append("micro_dot_radius_frac", frac);
+        form.append("micro_smart_contrast", microSmartContrastEl.checked ? "1" : "0");
+        form.append("finder_shape", finderShapeEl.value);
+        form.append("finder_dark_color", finderDarkColorEl.value);
+        form.append("finder_light_color", finderLightColorEl.value);
+        form.append("use_short_url", useShortUrlEl.checked ? "1" : "0");
+        form.append("image", imageEl.files[0]);
+
+        const resp = await fetch("/qr/art", { method: "POST", body: form });
+        if (!resp.ok) {
+          const payload = await resp.json().catch(() => ({}));
+          throw new Error(payload.detail || ("HTTP " + resp.status));
+        }
+        const enc = resp.headers.get("X-QR-Encoded-Content");
+        shortUrlNote.textContent = enc ? ("QR encodes: " + enc) : "";
+        const decodeOk = resp.headers.get("X-QR-Decode-Ok");
+        setDecodeCheckFromHeader(decodeOk);
+        const blob = await resp.blob();
+        showPreviewFromBlob(blob);
+        statusEl.textContent = (livePreviewEl.checked ? "Live: " : "") + (reason || "OK");
+        statusEl.classList.add("live");
+      } catch (e) {
+        previewEl.innerHTML = '<div class="preview-placeholder">No preview</div>';
+        clearDecodeCheck();
+        errorEl.textContent = e.message || String(e);
+        statusEl.textContent = "";
+        statusEl.classList.remove("live");
+      }
+    }
+
+    function scheduleGenerate(reason) {
+      if (!livePreviewEl.checked && reason !== "manual") return;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (inFlight) return;
+        inFlight = true;
+        generateNow(reason).finally(() => { inFlight = false; });
+      }, reason === "manual" ? 0 : 420);
+    }
+
+    microDotRadiusPctEl.addEventListener("input", () => {
+      syncDotSizeLabel();
+      scheduleGenerate("dots");
+    });
+    cropFrame.addEventListener("pointerdown", (e) => {
+      framingDrag = { px: e.clientX, py: e.clientY, ox: cropState.ox, oy: cropState.oy };
+      cropFrame.setPointerCapture(e.pointerId);
+    });
+    cropFrame.addEventListener("pointermove", (e) => {
+      if (!framingDrag) return;
+      cropState.ox = framingDrag.ox + (e.clientX - framingDrag.px);
+      cropState.oy = framingDrag.oy + (e.clientY - framingDrag.py);
+      clampPan();
+      cropImg.style.left = cropState.ox + "px";
+      cropImg.style.top = cropState.oy + "px";
+      syncAnchorsFromFraming();
+      scheduleGenerate("framing");
+    });
+    cropFrame.addEventListener("pointerup", () => { framingDrag = null; });
+    cropFrame.addEventListener("pointercancel", () => { framingDrag = null; });
+    cropFrame.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+        const z = Number(coverZoomEl.value);
+        coverZoomEl.value = String(clamp(z + (e.deltaY > 0 ? -5 : 5), 50, 300));
+        coverZoomVal.textContent = coverZoomEl.value;
+        cropState.zoom = Number(coverZoomEl.value) / 100;
+        layoutFramingEditor(false);
+        scheduleGenerate("zoom");
+      },
+      { passive: false },
+    );
+    coverZoomEl.addEventListener("input", () => {
+      coverZoomVal.textContent = coverZoomEl.value;
+      cropState.zoom = Number(coverZoomEl.value) / 100;
+      layoutFramingEditor(false);
+      scheduleGenerate("zoom");
+    });
+
+    ["input", "change"].forEach((evt) => {
+      contentEl.addEventListener(evt, () => scheduleGenerate("content"));
+      useShortUrlEl.addEventListener(evt, () => scheduleGenerate("short"));
+      boxSizeEl.addEventListener(evt, () => scheduleGenerate("size"));
+      borderEl.addEventListener(evt, () => scheduleGenerate("border"));
+      finderShapeEl.addEventListener(evt, () => scheduleGenerate("finder"));
+      finderDarkColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
+      finderLightColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
+      microSmartContrastEl.addEventListener(evt, () => scheduleGenerate("contrast"));
+    });
+
+    imageEl.addEventListener("change", () => {
+      initFramingFromImage();
+      scheduleGenerate("image");
+    });
+    livePreviewEl.addEventListener("change", () => {
+      statusEl.textContent = livePreviewEl.checked ? "Live preview on" : "Live preview off";
+      statusEl.classList.toggle("live", livePreviewEl.checked);
+      if (livePreviewEl.checked) scheduleGenerate("live on");
+    });
+
+    generateBtn.addEventListener("click", () => generateNow("manual"));
+    resetDefaultsBtn.addEventListener("click", () => resetControlsToDefaults());
+
+    downloadBtn.addEventListener("click", () => {
+      if (!currentBlobUrl) return;
+      const a = document.createElement("a");
+      a.href = currentBlobUrl;
+      a.download = "qrender-microdot.png";
+      a.click();
+    });
+
+    syncDotSizeLabel();
+  </script>
+</body>
+</html>
