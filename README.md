@@ -130,8 +130,3 @@ chmod +x install-docker.sh docker-run.sh
 or `docker compose up --build`. SQLite and previews persist in `./data` (mounted at `/app/data`).
 
 If admin token fails after a secret change: restart the app and sign in again on `/admin` (browser may cache an old token).
-
-## Roadmap ideas
-
-- Heavier AI / ControlNet pipelines
-- Stronger finder/alignment protection options
