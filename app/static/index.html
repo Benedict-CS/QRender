@@ -100,11 +100,6 @@
       flex: 1;
       padding: 22px 0 36px;
     }
-    .main-lead {
-      margin: 0 0 20px;
-      font-size: 0.88rem;
-      line-height: 1.45;
-    }
 
     .site-footer {
       flex-shrink: 0;
@@ -126,22 +121,46 @@
       align-items: center;
       gap: 6px;
     }
-    .footer-nav .footer-static {
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--muted);
-      text-decoration: none;
-    }
-    .footer-nav .footer-static:hover {
-      color: var(--accent);
-    }
     .footer-copy {
       margin: 0;
       font-size: 0.78rem;
       color: var(--muted);
       opacity: 0.9;
+    }
+    .footer-copy a {
+      color: inherit;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .footer-copy a:hover {
+      color: var(--accent);
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    .github-icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-decoration: none;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+    .github-icon-link:hover {
+      border-color: var(--muted);
+      color: var(--accent);
     }
     .muted { color: var(--muted); font-size: 0.85rem; line-height: 1.45; margin: 0; }
     .layout {
@@ -170,15 +189,13 @@
       padding-top: 14px;
     }
     .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
-    .section-title {
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
     label { display: block; margin: 10px 0 6px; font-size: 0.82rem; color: #c7d2e5; }
+    .field-label-photo {
+      display: block;
+      margin: 10px 0 4px;
+      font-size: 0.82rem;
+      color: #c7d2e5;
+    }
     input[type="text"], input[type="number"], select {
       width: 100%;
       padding: 10px 12px;
@@ -197,14 +214,62 @@
       background: var(--surface2);
       cursor: pointer;
     }
-    input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px dashed var(--border);
-      background: var(--surface2);
+    .file-input-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+    .file-picker-zone {
+      margin-top: 8px;
+      padding: 18px 16px;
+      border-radius: 12px;
+      border: 1px dashed rgba(91, 140, 255, 0.35);
+      background: rgba(0, 0, 0, 0.18);
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .file-picker-zone:hover {
+      border-color: rgba(91, 140, 255, 0.55);
+      background: rgba(91, 140, 255, 0.06);
+    }
+    .file-picker-zone.is-drag {
+      border-color: var(--accent);
+      background: rgba(91, 140, 255, 0.1);
+    }
+    .file-picker-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .file-picker-title {
+      font-size: 0.92rem;
+      font-weight: 650;
+      color: var(--text);
+    }
+    .file-picker-hint {
+      font-size: 0.78rem;
       color: var(--muted);
-      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+    .file-picker-status {
+      margin: 14px 0 0;
+      font-size: 0.82rem;
+      color: var(--muted);
+      word-break: break-all;
+      text-align: center;
+      line-height: 1.35;
+    }
+    .file-picker-status.has-file {
+      color: #c7d2e5;
+      font-weight: 500;
     }
     input[type="range"] {
       width: 100%;
@@ -314,17 +379,86 @@
     }
     .bundle-toggle { margin-top: 0; }
     .bundle-toggle + .bundle-toggle { margin-top: 10px; }
+    .short-link-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .short-link-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      flex-shrink: 0;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: #dbe4f5;
+    }
+    .short-link-check input {
+      width: auto;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .short-url-field-wrap {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      flex: 1;
+      min-width: min(100%, 200px);
+    }
+    .short-url-field {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.8rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .short-url-field::placeholder {
+      color: var(--muted);
+      font-family: inherit;
+    }
+    .short-url-copy {
+      flex-shrink: 0;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-weight: 550;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .short-url-copy:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+    .short-url-copy:not(:disabled):hover {
+      border-color: rgba(91, 140, 255, 0.45);
+      color: var(--accent);
+    }
+    @media (max-width: 520px) {
+      .short-link-row { align-items: stretch; }
+      .short-link-check { width: 100%; }
+      .short-url-field-wrap { width: 100%; }
+    }
+    .publish-before-generate {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .publish-before-generate .toggle {
+      margin-top: 0;
+    }
     .field-hint {
       margin: 10px 0 0;
       font-size: 0.78rem;
       line-height: 1.45;
       color: var(--muted);
-    }
-    .encoded-note {
-      margin-top: 10px;
-      min-height: 1.2em;
-      font-size: 0.78rem;
-      word-break: break-all;
     }
     .card-head {
       display: flex;
@@ -454,36 +588,38 @@
 
     <main class="site-main" id="main">
       <div class="shell-inner">
-        <p class="muted main-lead">
-          Micro-dot QR on a photo. Use <strong>https://</strong> for links. Short URL + <strong>Save to admin</strong> are optional.
-        </p>
-
         <div class="layout">
       <div class="card">
-        <h2>Controls</h2>
-
         <div class="section">
-          <div class="section-title">QR</div>
           <label for="content">Link or text</label>
           <input
             id="content"
             type="text"
-            value="https://example.com"
-            placeholder="https://…"
+            value=""
+            placeholder="https://example.com"
             autocomplete="url"
           />
           <div id="shortLinkBundle" class="short-link-bundle">
-            <div class="toggle bundle-toggle">
-              <input type="checkbox" id="use_short_url" aria-describedby="shortLinkHint" />
-              <span>Short link <code>/s/…</code> (redirects to the URL above)</span>
+            <div class="short-link-row">
+              <label class="short-link-check" for="use_short_url">
+                <input type="checkbox" id="use_short_url" />
+                <span>Short link</span>
+              </label>
+              <div class="short-url-field-wrap">
+                <input
+                  type="text"
+                  id="shortUrlDisplay"
+                  class="short-url-field"
+                  readonly
+                  placeholder="Generate to get link"
+                  aria-label="Short URL (copy after generate)"
+                />
+                <button type="button" class="short-url-copy" id="copyShortUrlBtn" disabled>
+                  Copy
+                </button>
+              </div>
             </div>
-            <div class="toggle bundle-toggle">
-              <input type="checkbox" id="save_to_admin" disabled aria-describedby="shortLinkHint" />
-              <span><strong>Save to admin</strong> — list + preview (skip for one-offs)</span>
-            </div>
-            <p id="shortLinkHint" class="field-hint" role="status"></p>
           </div>
-          <p id="shortUrlNote" class="muted encoded-note" aria-live="polite"></p>
           <div class="row2">
             <div>
               <label for="box_size">Module size (pixels)</label>
@@ -513,9 +649,15 @@
         </div>
 
         <div class="section">
-          <div class="section-title">Photo</div>
-          <label for="image">Background image</label>
-          <input id="image" type="file" accept="image/*" />
+          <div class="field-label-photo">Background image</div>
+          <div class="file-picker-zone" id="imageDropzone">
+            <input id="image" class="file-input-hidden" type="file" accept="image/*" />
+            <label for="image" class="file-picker-card">
+              <span class="file-picker-title">Choose image</span>
+              <span class="file-picker-hint">Click here or drag &amp; drop · PNG, JPG, WebP, GIF…</span>
+            </label>
+            <p id="imageFileStatus" class="file-picker-status">No file selected</p>
+          </div>
 
           <p class="muted" style="margin-top:8px;">
             Square export — not a crop tool: <strong>drag</strong> to move the photo,
@@ -547,6 +689,14 @@
           <span>Live preview</span>
         </div>
 
+        <div class="publish-before-generate">
+          <div class="toggle">
+            <input type="checkbox" id="save_to_admin" disabled aria-describedby="saveAdminHint" />
+            <span><strong>Save to admin</strong> — after Generate: list + photo preview on this server</span>
+          </div>
+          <p id="saveAdminHint" class="field-hint" role="status"></p>
+        </div>
+
         <div class="actions">
           <button type="button" class="primary" id="generateBtn">
             Generate
@@ -573,7 +723,9 @@
             <ol class="preview-steps">
               <li>Set link or text</li>
               <li>Pick background image</li>
-              <li>Zoom &amp; drag to frame the photo, set dot size — download PNG</li>
+              <li>Zoom &amp; drag inside the square</li>
+              <li>Tweak dot size</li>
+              <li>Generate → Download PNG</li>
             </ol>
           </div>
         </div>
@@ -586,10 +738,12 @@
     <footer class="site-footer">
       <div class="shell-inner site-footer-inner">
         <nav class="footer-nav" aria-label="Footer">
-          {{GITHUB_LINK}}
-          <a class="footer-static" href="/admin">Admin</a>
+          {{GITHUB_FOOTER_ICON}}
         </nav>
-        <p class="footer-copy">Photo micro-dot QR · Short links optional</p>
+        <p class="footer-copy">
+          © 2026
+          <a href="https://benedict.winlab.tw" target="_blank" rel="noopener noreferrer">Benedict</a>
+        </p>
       </div>
     </footer>
   </div>
@@ -598,7 +752,8 @@
     const contentEl = document.getElementById("content");
     const useShortUrlEl = document.getElementById("use_short_url");
     const saveToAdminEl = document.getElementById("save_to_admin");
-    const shortUrlNote = document.getElementById("shortUrlNote");
+    const shortUrlDisplay = document.getElementById("shortUrlDisplay");
+    const copyShortUrlBtn = document.getElementById("copyShortUrlBtn");
     const boxSizeEl = document.getElementById("box_size");
     const borderEl = document.getElementById("border");
     const finderShapeEl = document.getElementById("finder_shape");
@@ -614,6 +769,7 @@
     const microDotRadiusPctEl = document.getElementById("micro_dot_radius_pct");
     const dotSizeLabel = document.getElementById("dotSizeLabel");
     const imageEl = document.getElementById("image");
+    const imageDropzone = document.getElementById("imageDropzone");
     const livePreviewEl = document.getElementById("livePreview");
     const generateBtn = document.getElementById("generateBtn");
     const downloadBtn = document.getElementById("downloadBtn");
@@ -623,7 +779,7 @@
     const statusEl = document.getElementById("status");
     const decodeCheckEl = document.getElementById("decodeCheckEl");
     const shortLinkBundle = document.getElementById("shortLinkBundle");
-    const shortLinkHintEl = document.getElementById("shortLinkHint");
+    const saveAdminHintEl = document.getElementById("saveAdminHint");
 
     let currentBlobUrl = null;
     let debounceTimer = null;
@@ -643,6 +799,25 @@
       dotSizeLabel.textContent = microDotRadiusPctEl.value + "%";
     }
 
+    function syncImageFileLabel() {
+      const st = document.getElementById("imageFileStatus");
+      if (!st || !imageEl) return;
+      const f = imageEl.files && imageEl.files[0];
+      st.textContent = f ? f.name : "No file selected";
+      st.classList.toggle("has-file", Boolean(f));
+    }
+
+    function syncShortUrlCopyUi() {
+      if (!shortUrlDisplay || !copyShortUrlBtn) return;
+      copyShortUrlBtn.disabled = !shortUrlDisplay.value.trim();
+    }
+
+    function clearShortUrlDisplay() {
+      if (!shortUrlDisplay) return;
+      shortUrlDisplay.value = "";
+      syncShortUrlCopyUi();
+    }
+
     function previewEmptyHtml() {
       return (
         '<div class="preview-placeholder">' +
@@ -650,7 +825,9 @@
         '<ol class="preview-steps">' +
         "<li>Set link or text</li>" +
         "<li>Pick background image</li>" +
-        "<li>Zoom and drag to frame the photo, set dot size — download PNG</li>" +
+        "<li>Zoom and drag inside the square</li>" +
+        "<li>Tweak dot size</li>" +
+        "<li>Generate → Download PNG</li>" +
         "</ol></div>"
       );
     }
@@ -660,19 +837,16 @@
       generateBtn.disabled = !hasImg;
     }
 
-    function updateShortLinkHints() {
-      if (!shortLinkHintEl) return;
+    function updateSaveAdminHints() {
+      if (!saveAdminHintEl) return;
       const u = useShortUrlEl.checked;
       const s = saveToAdminEl.checked;
       if (!u) {
-        shortLinkHintEl.textContent =
-          "Tip: turn on for a smaller QR — encodes /s/… here instead of the full URL.";
+        saveAdminHintEl.textContent = "Enable Short link (QR section above) to use this.";
       } else if (s) {
-        shortLinkHintEl.textContent =
-          "Next generate adds this link to Admin (preview + stats). Redirect always works.";
+        saveAdminHintEl.textContent = "Next Generate saves listing + preview in Admin.";
       } else {
-        shortLinkHintEl.textContent =
-          "Scan works without Admin. Turn on Save above only if you want listing & editing later.";
+        saveAdminHintEl.textContent = "Leave off for one-offs; turn on to track and edit in Admin.";
       }
     }
 
@@ -785,14 +959,14 @@
       saveToAdminEl.disabled = !on;
       if (!on) saveToAdminEl.checked = false;
       if (shortLinkBundle) shortLinkBundle.classList.toggle("is-on", on);
-      updateShortLinkHints();
+      updateSaveAdminHints();
+      clearShortUrlDisplay();
     }
 
     function resetControlsToDefaults() {
-      contentEl.value = "https://example.com";
+      contentEl.value = "";
       useShortUrlEl.checked = false;
       syncSaveToAdminEnabled();
-      shortUrlNote.textContent = "";
       boxSizeEl.value = "12";
       borderEl.value = "2";
       finderShapeEl.value = "square";
@@ -878,6 +1052,14 @@
         return;
       }
 
+      const contentTrim = contentEl.value.trim();
+      if (!contentTrim) {
+        if (reason !== "manual") return;
+        errorEl.textContent = "Enter a link or text.";
+        scrollErrorIntoView();
+        return;
+      }
+
       setPreviewLoading();
       try {
         const frac = (Number(microDotRadiusPctEl.value) / 100).toFixed(2);
@@ -903,7 +1085,12 @@
           throw new Error(payload.detail || ("HTTP " + resp.status));
         }
         const enc = resp.headers.get("X-QR-Encoded-Content");
-        shortUrlNote.textContent = enc ? ("QR encodes: " + enc) : "";
+        if (useShortUrlEl.checked && enc) {
+          shortUrlDisplay.value = enc.trim();
+        } else {
+          clearShortUrlDisplay();
+        }
+        syncShortUrlCopyUi();
         const decodeOk = resp.headers.get("X-QR-Decode-Ok");
         setDecodeCheckFromHeader(decodeOk);
         const blob = await resp.blob();
@@ -913,6 +1100,7 @@
       } catch (e) {
         previewEl.innerHTML = previewEmptyHtml();
         clearDecodeCheck();
+        clearShortUrlDisplay();
         errorEl.textContent = e.message || String(e);
         scrollErrorIntoView();
         statusEl.textContent = "";
@@ -971,7 +1159,25 @@
     });
 
     useShortUrlEl.addEventListener("change", syncSaveToAdminEnabled);
-    saveToAdminEl.addEventListener("change", updateShortLinkHints);
+    saveToAdminEl.addEventListener("change", updateSaveAdminHints);
+
+    copyShortUrlBtn.addEventListener("click", async () => {
+      const t = shortUrlDisplay.value.trim();
+      if (!t) return;
+      try {
+        await navigator.clipboard.writeText(t);
+      } catch {
+        shortUrlDisplay.select();
+        try {
+          document.execCommand("copy");
+        } catch {
+          return;
+        }
+      }
+      const prev = copyShortUrlBtn.textContent;
+      copyShortUrlBtn.textContent = "Copied";
+      setTimeout(() => { copyShortUrlBtn.textContent = prev; }, 1400);
+    });
 
     ["input", "change"].forEach((evt) => {
       contentEl.addEventListener(evt, () => scheduleGenerate("content"));
@@ -984,10 +1190,37 @@
     });
 
     imageEl.addEventListener("change", () => {
+      syncImageFileLabel();
       initFramingFromImage();
       syncGenerateEnabled();
       scheduleGenerate("image");
     });
+
+    if (imageDropzone) {
+      ["dragenter", "dragover"].forEach((evName) => {
+        imageDropzone.addEventListener(evName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          imageDropzone.classList.add("is-drag");
+        });
+      });
+      imageDropzone.addEventListener("dragleave", (e) => {
+        if (!imageDropzone.contains(e.relatedTarget)) {
+          imageDropzone.classList.remove("is-drag");
+        }
+      });
+      imageDropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        imageDropzone.classList.remove("is-drag");
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file || !file.type.startsWith("image/")) return;
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        imageEl.files = dt.files;
+        imageEl.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
     livePreviewEl.addEventListener("change", () => {
       statusEl.textContent = livePreviewEl.checked ? "Live preview on" : "Live preview off";
       statusEl.classList.toggle("live", livePreviewEl.checked);
@@ -1006,7 +1239,9 @@
     });
 
     syncDotSizeLabel();
+    syncImageFileLabel();
     syncSaveToAdminEnabled();
+    syncShortUrlCopyUi();
     syncGenerateEnabled();
   </script>
 </body>

@@ -64,9 +64,25 @@ def _index_html() -> str:
             f'<a class="nav-link" href="{safe}" target="_blank" rel="noopener noreferrer">'
             "GitHub</a>"
         )
+        gh_icon = (
+            f'<a class="github-icon-link footer-github" href="{safe}" '
+            'target="_blank" rel="noopener noreferrer" title="QRender on GitHub">'
+            '<span class="sr-only">QRender on GitHub</span>'
+            '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" '
+            'viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
+            '<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 '
+            "0-.285-.015-1.23-.015-2.235-3.015.555-3.795-1.455-3.795-1.455-.51-1.305-1.245-1.65-1.245-1.65"
+            "-1.005-.69.075-.675.075-.675 1.11.075 1.695 1.14 1.695 1.14 1.005 1.725 2.64 1.23 3.285.93.105-.735"
+            ".39-1.23.705-1.515-2.4-.27-4.935-1.215-4.935-5.43 0-1.2.42-2.19 1.125-2.955-.12-.27-.495-1.365"
+            ".105-2.85 0 0 .915-.285 3.005 1.125.87-.24 1.815-.36 2.745-.36s1.875.12 2.745.36c2.085-1.41 "
+            "3-1.125 3-1.125.6 1.485.225 2.58.12 2.85.705.765 1.125 1.755 1.125 2.955 0 4.23-2.535 5.16-4.95 "
+            "5.43.39.33.75.96.75 1.935 0 1.395-.015 2.52-.015 2.865 0 .315.225.69.825.57A12.02 12.02 0 0024 12"
+            'c0-6.63-5.37-12-12-12z"/></svg></a>'
+        )
     else:
         badge = ""
-    return template.replace("{{GITHUB_LINK}}", badge)
+        gh_icon = ""
+    return template.replace("{{GITHUB_LINK}}", badge).replace("{{GITHUB_FOOTER_ICON}}", gh_icon)
 
 
 @app.get("/")
