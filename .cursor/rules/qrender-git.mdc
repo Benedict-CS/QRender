@@ -1,0 +1,20 @@
+---
+description: After finishing work in QRender, commit and push by default
+alwaysApply: true
+---
+
+# QRender — Git workflow
+
+When a task in this repository (`QRender`) is **complete** (code or docs changes are done and verified):
+
+1. Run `git status` and stage the relevant files (`git add` …).
+2. Create a **single concise commit** with an **English** message (imperative mood, describe what changed).
+3. Run **`git push`** to `origin` on the current branch (usually `main`).
+
+**Skip** commit/push only if:
+
+- The user explicitly asked not to commit, or
+- There is nothing to commit, or
+- Push is impossible in this environment (e.g. no credentials) — then say so and stop after commit locally if applicable.
+
+Do not leave the working tree dirty with finished work unless the user opts out.

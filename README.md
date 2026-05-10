@@ -9,6 +9,17 @@ Open-source web app for **photo micro-dot style QR codes** (art QR with a backgr
 - Generator UI at `/`
 - Admin (needs `ADMIN_SECRET`) at `/admin`
 
+## Tech stack
+
+| Layer | Choice |
+|--------|--------|
+| Runtime | Python 3.11+ |
+| API / server | [FastAPI](https://fastapi.tiangolo.com/), [Uvicorn](https://www.uvicorn.org/) |
+| QR & images | [qrcode](https://github.com/lincolnloop/python-qrcode) + [Pillow](https://python-pillow.org/) |
+| Short links & analytics | SQLite (`data/short_urls.sqlite3`) |
+| Frontend | Static HTML, CSS, and plain JS (no bundler) |
+| Config | [python-dotenv](https://github.com/theskumar/python-dotenv), optional Docker / Compose |
+
 ## Why this repo
 
 - **Micro-dot art QR** — `POST /qr/art` blends your photo under a scannable QR pattern.
