@@ -17,10 +17,6 @@ Open-source web app for **photo micro-dot style QR codes** (art QR with a backgr
 - Generator UI at `/`
 - Admin (needs `ADMIN_SECRET`) at `/admin`
 
-## Tech stack
-
-Badges above match **`pyproject.toml`** (minimum versions). Also in the stack: **static HTML/CSS/JS** (no bundler), **python-dotenv**, **python-multipart**.
-
 ## Why this repo
 
 - **Micro-dot art QR** — `POST /qr/art` blends your photo under a scannable QR pattern.
