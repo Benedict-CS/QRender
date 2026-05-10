@@ -1,32 +1,36 @@
 # QRender
 
-Open-source starter project for generating QR codes, including an "art-style" image overlay mode.
+Open-source web app for **photo micro-dot style QR codes** (art QR with a background image, corner finders, and short-link mode).
+
+## Demo
+
+**Live site:** [https://qrender.ben.winlab.tw](https://qrender.ben.winlab.tw)
+
+- Generator UI at `/`
+- Admin (needs `ADMIN_SECRET`) at `/admin`
 
 ## Why this repo
 
-This project gives you a practical base to build the visual QR idea:
-- Standard QR output (`/qr/basic`)
-- Art-style QR output with image blending (`/qr/art`)
-- High error correction mode (`H`) for better scan tolerance
+- **Micro-dot art QR** — `POST /qr/art` blends your photo under a scannable QR pattern.
+- **Short links** — optional `https://your-host/s/<code>` in the QR; change the destination later in admin without reprinting.
+- **WinLab gallery roulette** — `GET /r/winlab-random` returns a **302** to a random **still image** from the public [WinLab gallery](https://gallery.winlab.tw/) (videos skipped). Cache TTL: `WINLAB_GALLERY_CACHE_SECONDS` (default 300). Good for a QR that shows a different lab photo on each open.
 
-> Note: This starter uses deterministic image blending, not Stable Diffusion/ControlNet yet.
-> You can later extend this API with an AI pipeline.
+> This is deterministic image compositing (Pillow + `qrcode`), not an SD/ControlNet pipeline — easy to extend later.
 
-## Quick Start
+## Quick start
 
-### 1) Create virtual environment
+### 1) Virtual environment
 
 ```bash
-cd /home/ben/QRender
+cd QRender
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 2) Install dependencies
+### 2) Install
 
 ```bash
-python -m ensurepip --upgrade
-python -m pip install --upgrade pip
+python -m pip install -U pip
 python -m pip install -e .
 ```
 
@@ -36,104 +40,90 @@ python -m pip install -e .
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### 4) Open the frontend UI
+### 4) Open the UI
 
-After server startup, open:
+- App: [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
+- OpenAPI: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
-```text
-http://127.0.0.1:8000/
-```
-
-You can also use Swagger:
-
-```text
-http://127.0.0.1:8000/docs
-```
+Static assets (e.g. logo) are served under `/static/`.
 
 ## API examples
 
-### Health check
+### Health
 
 ```bash
 curl http://127.0.0.1:8000/health
 ```
 
-### Basic QR
-
-```bash
-curl -X POST "http://127.0.0.1:8000/qr/basic" \
-  -F "content=https://example.com" \
-  -o basic.png
-```
-
-### Art QR
+### Art QR (micro-dot)
 
 ```bash
 curl -X POST "http://127.0.0.1:8000/qr/art" \
   -F "content=https://example.com" \
-  -F "overlay_alpha=0.40" \
-  -F "image=@./your-image.png" \
+  -F "image=@./your-image.jpg" \
+  -F "fit_mode=cover" \
+  -F "cover_zoom=0.5" \
+  -F "crop_anchor_x=0.5" \
+  -F "crop_anchor_y=0.5" \
+  -F "micro_dot_radius_frac=0.22" \
+  -F "finder_shape=square" \
+  -F "finder_dark_color=#000000" \
+  -F "finder_light_color=#ffffff" \
+  -F "use_short_url=0" \
+  -F "save_to_admin=0" \
   -o art.png
 ```
 
+Response header `X-QR-Encoded-Content` reflects the string encoded in the QR (after short-link rewrite when enabled).
+
+### Random WinLab gallery image (redirect)
+
+```bash
+curl -sSI "http://127.0.0.1:8000/r/winlab-random" | grep -i '^location:'
+```
+
+Each request may redirect to a different image URL. Configure scrape URL / cache in `.env` — see `.env.example`.
+
 ## Short links (`/s/...`)
 
-With **“Use short link”** in the UI, the QR encodes `https://your-host/s/<code>` while the real URL is stored in SQLite under `data/short_urls.sqlite3`. That means:
+With **“Use short link”** in the UI, the QR can encode `https://your-host/s/<code>` while the real URL is stored in SQLite under `data/short_urls.sqlite3`:
 
-- The **same printed QR** keeps working if you **change the destination** in the admin UI (the path `/s/abc` stays the same).
-- **No built-in expiry**; delete a link manually if you need to retire it.
-- **Scan counts** and **per-scan timestamps** are recorded on each redirect (302).
+- The **same printed QR** can keep working if you **change the destination** in admin (path `/s/abc` unchanged).
+- **Scan counts** and timestamps are recorded on each **302** redirect.
 
-Set **`ADMIN_SECRET`** in the environment, then open **`/admin`**, paste the token, and manage links or view recent scans.
+Set **`ADMIN_SECRET`**, open **`/admin`**, paste the token, and manage links or view events.
 
-API (same token as header `X-Admin-Token`):
+Production: set **`PUBLIC_BASE_URL`** (e.g. `https://qrender.ben.winlab.tw`) so generated QR payloads use the correct host.
 
-- `GET /api/admin/links` — list all
+Admin API (header `X-Admin-Token`):
+
+- `GET /api/admin/links`
 - `PATCH /api/admin/links/{code}` — JSON `{ "target": "https://..." }`
 - `DELETE /api/admin/links/{code}`
-- `GET /api/admin/links/{code}/events` — recent scan times
-
-In production, set **`PUBLIC_BASE_URL`** to your public `https://…` origin so generated QR payloads use the correct host.
+- `GET /api/admin/links/{code}/events`
 
 ## Docker
 
-Bootstrap `.env` (creates file, fills `ADMIN_SECRET` if empty, fixes placeholder URL):
+Bootstrap `.env`:
 
 ```bash
 python3 scripts/setup_env.py
 ```
 
-Install Docker Engine once (Ubuntu/Debian; requires sudo password in your terminal):
+Then either:
 
 ```bash
 chmod +x install-docker.sh docker-run.sh
 ./install-docker.sh
-```
-
-Log out and back in, then:
-
-```bash
+# log out/in for docker group, then:
 ./docker-run.sh
 ```
 
-Foreground build+run; for background: `./docker-run.sh up -d`. See `./docker-run.sh help`.
+or `docker compose up --build`. SQLite and previews persist in `./data` (mounted at `/app/data`).
 
-Alternatively: `docker compose up --build` (same as the script).
+If admin token fails after a secret change: restart the app and sign in again on `/admin` (browser may cache an old token).
 
-SQLite and QR previews live in `./data` on the host (mounted at `/app/data`) so data survives container restarts.
+## Roadmap ideas
 
-### Admin login vs `ADMIN_SECRET`
-
-Compose injects the project **`.env`** into the container (`env_file` in `docker-compose.yml`), so **`ADMIN_SECRET` should match** what you put in that file for local runs.
-
-If the UI shows **invalid admin token** or kicks you back to login:
-
-1. **Restart** the app after editing `.env` (`docker compose up -d --build` or restart uvicorn).
-2. **Sign in again** on `/admin` — the browser may still hold an **old** token from before you changed the secret (session/local storage).
-3. Ensure you run Compose from the **project root** where `.env` lives, or copy `.env` there (`python3 scripts/setup_env.py` helps bootstrap it).
-
-## Next roadmap ideas
-
-- Stable Diffusion + ControlNet integration
-- Masked finder/alignment protection with matrix-level control
-
+- Heavier AI / ControlNet pipelines
+- Stronger finder/alignment protection options
