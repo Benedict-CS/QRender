@@ -27,15 +27,122 @@
       color: var(--text);
       min-height: 100vh;
     }
-    .shell { max-width: 1080px; margin: 0 auto; padding: 28px 20px 48px; }
-    header { margin-bottom: 22px; }
-    header h1 {
-      margin: 0 0 6px;
-      font-size: 1.65rem;
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .shell-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .site-header {
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+      background: rgba(12, 15, 20, 0.85);
+      backdrop-filter: blur(10px);
+    }
+    .site-header-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 56px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .brand {
+      font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
     }
-    header p { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.5; }
+    .brand:hover {
+      color: var(--accent);
+    }
+    .site-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+    .nav-link {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+    .nav-link:hover {
+      color: var(--text);
+      border-color: var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .nav-link--accent {
+      color: var(--accent);
+      border-color: rgba(91, 140, 255, 0.4);
+      background: rgba(91, 140, 255, 0.08);
+    }
+    .nav-link--accent:hover {
+      border-color: var(--accent);
+      background: rgba(91, 140, 255, 0.14);
+    }
+
+    .site-main {
+      flex: 1;
+      padding: 22px 0 36px;
+    }
+    .main-lead {
+      margin: 0 0 20px;
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .site-footer {
+      flex-shrink: 0;
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.22);
+      padding: 18px 0 26px;
+    }
+    .site-footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .footer-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-nav .footer-static {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .footer-nav .footer-static:hover {
+      color: var(--accent);
+    }
+    .footer-copy {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      opacity: 0.9;
+    }
     .muted { color: var(--muted); font-size: 0.85rem; line-height: 1.45; margin: 0; }
     .layout {
       display: grid;
@@ -193,6 +300,99 @@
     }
     .toggle input { width: auto; accent-color: var(--accent); }
     .toggle span { font-size: 0.88rem; color: #dbe4f5; }
+    .short-link-bundle {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.12);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .short-link-bundle.is-on {
+      border-color: rgba(91, 140, 255, 0.38);
+      box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.06);
+    }
+    .bundle-toggle { margin-top: 0; }
+    .bundle-toggle + .bundle-toggle { margin-top: 10px; }
+    .field-hint {
+      margin: 10px 0 0;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    .encoded-note {
+      margin-top: 10px;
+      min-height: 1.2em;
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+    .card-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .card-head h2 { margin: 0; }
+    .card-sub {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .preview-placeholder-lead {
+      margin: 0 0 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .preview-steps {
+      margin: 0;
+      padding-left: 1.15em;
+      text-align: left;
+      max-width: 280px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.55;
+    }
+    .preview-steps li { margin: 4px 0; }
+    .preview-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 16px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .preview-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: qrender-spin 0.65s linear infinite;
+    }
+    @keyframes qrender-spin {
+      to { transform: rotate(360deg); }
+    }
+    kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.72rem;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .kbd-hint {
+      margin-top: 12px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
     .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
     button.primary {
       flex: 1;
@@ -215,6 +415,10 @@
       color: var(--text);
       cursor: pointer;
       font-weight: 550;
+    }
+    button.ghost:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
     }
     .status {
       margin-top: 10px;
@@ -252,14 +456,24 @@
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <h1>QRender</h1>
-      <p>Photo <strong>micro-dot</strong> QR: your image stays visible; data is tiny dots. Use a full <strong>https://</strong> link so phones open the browser when scanned.</p>
-      <p class="muted" style="margin-top:8px">Using short links? Manage destinations and scan counts on the <a href="/admin">short-link admin</a> page (needs <code>ADMIN_SECRET</code> on the server).</p>
+  <div class="page">
+    <header class="site-header">
+      <div class="shell-inner site-header-inner">
+        <a class="brand" href="/">QRender</a>
+        <nav class="site-nav" aria-label="Primary">
+          {{GITHUB_LINK}}
+          <a class="nav-link nav-link--accent" href="/admin">Admin</a>
+        </nav>
+      </div>
     </header>
 
-    <div class="layout">
+    <main class="site-main" id="main">
+      <div class="shell-inner">
+        <p class="muted main-lead">
+          Micro-dot QR on a photo. Use <strong>https://</strong> for links. Short URL + <strong>Save to admin</strong> are optional.
+        </p>
+
+        <div class="layout">
       <div class="card">
         <h2>Controls</h2>
 
@@ -271,12 +485,20 @@
             type="text"
             value="https://example.com"
             placeholder="https://…"
+            autocomplete="url"
           />
-          <div class="toggle" style="margin-top:10px">
-            <input type="checkbox" id="use_short_url" />
-            <span>Use short link (simpler QR) — encodes <code>/s/…</code> on this server, then redirects to the URL above</span>
+          <div id="shortLinkBundle" class="short-link-bundle">
+            <div class="toggle bundle-toggle">
+              <input type="checkbox" id="use_short_url" aria-describedby="shortLinkHint" />
+              <span>Short link <code>/s/…</code> (redirects to the URL above)</span>
+            </div>
+            <div class="toggle bundle-toggle">
+              <input type="checkbox" id="save_to_admin" disabled aria-describedby="shortLinkHint" />
+              <span><strong>Save to admin</strong> — list + preview (skip for one-offs)</span>
+            </div>
+            <p id="shortLinkHint" class="field-hint" role="status"></p>
           </div>
-          <p id="shortUrlNote" class="muted" style="margin-top:8px; min-height:1.2em;"></p>
+          <p id="shortUrlNote" class="muted encoded-note" aria-live="polite"></p>
           <div class="row2">
             <div>
               <label for="box_size">Module size (pixels)</label>
@@ -303,7 +525,6 @@
               <input id="finder_light_color" type="color" value="#ffffff" />
             </div>
           </div>
-          <p class="muted" style="margin-top:8px;">Finders are drawn solid (not micro-dots) for reliable scanning. Circle: outer ring = Finder dark, center dot = Finder light; the band between and the space outside the ring stay transparent over the photo.</p>
         </div>
 
         <div class="section">
@@ -311,7 +532,7 @@
           <label for="image">Background image</label>
           <input id="image" type="file" accept="image/*" />
 
-          <p class="muted" style="margin-top:8px;">Corner finders stay solid for reliable scans. Drag to pan. Slider or scroll: below 100% zooms out (see more picture with white margins); above 100% zooms in.</p>
+          <p class="muted" style="margin-top:8px;">Drag to pan; slider or wheel zooms inside the frame.</p>
 
           <input type="hidden" id="crop_anchor_x" value="50" />
           <input type="hidden" id="crop_anchor_y" value="50" />
@@ -326,7 +547,7 @@
               <input type="range" id="cover_zoom" min="50" max="300" value="100" step="5" />
               <span class="zoom-ico" title="Zoom in">■</span>
             </div>
-            <p class="crop-hint"><span class="range-val" id="coverZoomVal">100</span>% · White outline matches export shape (square by default).</p>
+            <p class="crop-hint"><span class="range-val" id="coverZoomVal">100</span>% · Outline matches export.</p>
           </div>
 
           <label for="micro_dot_radius_pct">Dot radius <span class="range-val" id="dotSizeLabel">22%</span> of cell</label>
@@ -334,37 +555,68 @@
 
           <div class="toggle">
             <input type="checkbox" id="micro_smart_contrast" checked />
-            <span>Sharper dots on busy backgrounds (recommended)</span>
+            <span>Sharper dots on busy photos</span>
           </div>
         </div>
 
         <div class="toggle">
           <input type="checkbox" id="livePreview" checked />
-          <span>Live preview</span>
+          <span>Auto-update preview <span class="muted" style="font-size:0.82em"> · shortly after you change settings</span></span>
         </div>
 
         <div class="actions">
-          <button type="button" class="primary" id="generateBtn">Generate</button>
-          <button type="button" class="ghost" id="downloadBtn" disabled>Download PNG</button>
-          <button type="button" class="ghost" id="resetDefaultsBtn" title="Reset controls">Reset</button>
+          <button type="button" class="primary" id="generateBtn" aria-describedby="kbdHint">
+            Generate
+          </button>
+          <button type="button" class="ghost" id="downloadBtn" disabled title="Available after a successful render">
+            Download PNG
+          </button>
+          <button type="button" class="ghost" id="resetDefaultsBtn" title="Reset controls to defaults (photo file unchanged)">
+            Reset
+          </button>
         </div>
+        <p class="kbd-hint" id="kbdHint"></p>
         <div class="status" id="status"></div>
-        <div class="error" id="error"></div>
+        <div class="error" id="error" role="alert"></div>
       </div>
 
       <div class="card">
-        <h2>Preview</h2>
+        <div class="card-head">
+          <h2>Preview</h2>
+          <p class="card-sub">Same image as Download PNG</p>
+        </div>
         <div class="preview-wrap" id="preview">
-          <div class="preview-placeholder">Upload an image to preview.</div>
+          <div class="preview-placeholder">
+            <p class="preview-placeholder-lead">Choose a photo to begin</p>
+            <ol class="preview-steps">
+              <li>Set link or text</li>
+              <li>Pick background image</li>
+              <li>Adjust crop and dots, then download</li>
+            </ol>
+          </div>
         </div>
         <p id="decodeCheckEl" class="decode-check decode-check--muted" aria-live="polite"></p>
       </div>
     </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell-inner site-footer-inner">
+        <nav class="footer-nav" aria-label="Footer">
+          {{GITHUB_LINK}}
+          <a class="footer-static" href="/admin">Admin</a>
+          <a class="footer-static" href="/health">API status</a>
+        </nav>
+        <p class="footer-copy">Photo micro-dot QR · Short links optional</p>
+      </div>
+    </footer>
   </div>
 
   <script>
     const contentEl = document.getElementById("content");
     const useShortUrlEl = document.getElementById("use_short_url");
+    const saveToAdminEl = document.getElementById("save_to_admin");
     const shortUrlNote = document.getElementById("shortUrlNote");
     const boxSizeEl = document.getElementById("box_size");
     const borderEl = document.getElementById("border");
@@ -390,6 +642,9 @@
     const errorEl = document.getElementById("error");
     const statusEl = document.getElementById("status");
     const decodeCheckEl = document.getElementById("decodeCheckEl");
+    const shortLinkBundle = document.getElementById("shortLinkBundle");
+    const shortLinkHintEl = document.getElementById("shortLinkHint");
+    const kbdHintEl = document.getElementById("kbdHint");
 
     let currentBlobUrl = null;
     let debounceTimer = null;
@@ -407,6 +662,39 @@
 
     function syncDotSizeLabel() {
       dotSizeLabel.textContent = microDotRadiusPctEl.value + "%";
+    }
+
+    function previewEmptyHtml() {
+      return (
+        '<div class="preview-placeholder">' +
+        '<p class="preview-placeholder-lead">Choose a photo to begin</p>' +
+        '<ol class="preview-steps">' +
+        "<li>Set link or text</li>" +
+        "<li>Pick background image</li>" +
+        "<li>Adjust crop and dots, then download</li>" +
+        "</ol></div>"
+      );
+    }
+
+    function syncGenerateEnabled() {
+      const hasImg = Boolean(imageEl.files && imageEl.files.length > 0);
+      generateBtn.disabled = !hasImg;
+    }
+
+    function updateShortLinkHints() {
+      if (!shortLinkHintEl) return;
+      const u = useShortUrlEl.checked;
+      const s = saveToAdminEl.checked;
+      if (!u) {
+        shortLinkHintEl.textContent =
+          "Tip: turn on for a smaller QR — encodes /s/… here instead of the full URL.";
+      } else if (s) {
+        shortLinkHintEl.textContent =
+          "Next generate adds this link to Admin (preview + stats). Redirect always works.";
+      } else {
+        shortLinkHintEl.textContent =
+          "Scan works without Admin. Turn on Save above only if you want listing & editing later.";
+      }
     }
 
     function clampPan() {
@@ -513,9 +801,18 @@
       if (cropState.iw) layoutFramingEditor(false);
     }).observe(cropFrame);
 
+    function syncSaveToAdminEnabled() {
+      const on = useShortUrlEl.checked;
+      saveToAdminEl.disabled = !on;
+      if (!on) saveToAdminEl.checked = false;
+      if (shortLinkBundle) shortLinkBundle.classList.toggle("is-on", on);
+      updateShortLinkHints();
+    }
+
     function resetControlsToDefaults() {
       contentEl.value = "https://example.com";
       useShortUrlEl.checked = false;
+      syncSaveToAdminEnabled();
       shortUrlNote.textContent = "";
       boxSizeEl.value = "12";
       borderEl.value = "2";
@@ -538,6 +835,7 @@
       }
       statusEl.textContent = "Reset";
       statusEl.classList.add("live");
+      syncGenerateEnabled();
       scheduleGenerate("reset");
     }
 
@@ -573,7 +871,10 @@
         URL.revokeObjectURL(currentBlobUrl);
         currentBlobUrl = null;
       }
-      previewEl.innerHTML = '<div class="preview-placeholder">Generating…</div>';
+      previewEl.innerHTML =
+        '<div class="preview-loading" role="status" aria-live="polite">' +
+        '<div class="preview-spinner" aria-hidden="true"></div>' +
+        "<span>Rendering…</span></div>";
       downloadBtn.disabled = true;
       clearDecodeCheck();
     }
@@ -585,12 +886,17 @@
       downloadBtn.disabled = false;
     }
 
+    function scrollErrorIntoView() {
+      if (errorEl.textContent) errorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
     async function generateNow(reason) {
       errorEl.textContent = "";
 
       if (!imageEl.files || imageEl.files.length === 0) {
         if (reason !== "manual") return;
-        errorEl.textContent = "Choose a background image.";
+        errorEl.textContent = "Choose a background image first.";
+        scrollErrorIntoView();
         return;
       }
 
@@ -611,6 +917,7 @@
         form.append("finder_dark_color", finderDarkColorEl.value);
         form.append("finder_light_color", finderLightColorEl.value);
         form.append("use_short_url", useShortUrlEl.checked ? "1" : "0");
+        form.append("save_to_admin", saveToAdminEl.checked ? "1" : "0");
         form.append("image", imageEl.files[0]);
 
         const resp = await fetch("/qr/art", { method: "POST", body: form });
@@ -627,9 +934,10 @@
         statusEl.textContent = (livePreviewEl.checked ? "Live: " : "") + (reason || "OK");
         statusEl.classList.add("live");
       } catch (e) {
-        previewEl.innerHTML = '<div class="preview-placeholder">No preview</div>';
+        previewEl.innerHTML = previewEmptyHtml();
         clearDecodeCheck();
         errorEl.textContent = e.message || String(e);
+        scrollErrorIntoView();
         statusEl.textContent = "";
         statusEl.classList.remove("live");
       }
@@ -685,6 +993,9 @@
       scheduleGenerate("zoom");
     });
 
+    useShortUrlEl.addEventListener("change", syncSaveToAdminEnabled);
+    saveToAdminEl.addEventListener("change", updateShortLinkHints);
+
     ["input", "change"].forEach((evt) => {
       contentEl.addEventListener(evt, () => scheduleGenerate("content"));
       useShortUrlEl.addEventListener(evt, () => scheduleGenerate("short"));
@@ -698,12 +1009,25 @@
 
     imageEl.addEventListener("change", () => {
       initFramingFromImage();
+      syncGenerateEnabled();
       scheduleGenerate("image");
     });
     livePreviewEl.addEventListener("change", () => {
-      statusEl.textContent = livePreviewEl.checked ? "Live preview on" : "Live preview off";
+      statusEl.textContent = livePreviewEl.checked
+        ? "Auto-update on"
+        : "Auto-update off — click Generate when you want a fresh render";
       statusEl.classList.toggle("live", livePreviewEl.checked);
       if (livePreviewEl.checked) scheduleGenerate("live on");
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || !(e.ctrlKey || e.metaKey)) return;
+      if (e.repeat) return;
+      const tag = (e.target && e.target.tagName) || "";
+      if (tag === "TEXTAREA") return;
+      if (generateBtn.disabled) return;
+      e.preventDefault();
+      generateNow("manual");
     });
 
     generateBtn.addEventListener("click", () => generateNow("manual"));
@@ -718,6 +1042,14 @@
     });
 
     syncDotSizeLabel();
+    syncSaveToAdminEnabled();
+    syncGenerateEnabled();
+    if (kbdHintEl) {
+      const mac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform || "") || navigator.userAgent.includes("Mac");
+      kbdHintEl.innerHTML = mac
+        ? "Shortcut: <kbd>Cmd</kbd> + <kbd>Enter</kbd> to generate"
+        : "Shortcut: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to generate";
+    }
   </script>
 </body>
 </html>

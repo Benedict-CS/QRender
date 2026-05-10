@@ -97,13 +97,30 @@ In production, set **`PUBLIC_BASE_URL`** to your public `https://…` origin so 
 
 ## Docker
 
-Copy `.env.example` to `.env`, set `ADMIN_SECRET` and `PUBLIC_BASE_URL`, then:
+Bootstrap `.env` (creates file, fills `ADMIN_SECRET` if empty, fixes placeholder URL):
 
 ```bash
-docker compose up --build
+python3 scripts/setup_env.py
 ```
 
-SQLite lives in `./data` on the host (mounted volume) so links survive container restarts.
+Install Docker Engine once (Ubuntu/Debian; requires sudo password in your terminal):
+
+```bash
+chmod +x install-docker.sh docker-run.sh
+./install-docker.sh
+```
+
+Log out and back in, then:
+
+```bash
+./docker-run.sh
+```
+
+Foreground build+run; for background: `./docker-run.sh up -d`. See `./docker-run.sh help`.
+
+Alternatively: `docker compose up --build` (same as the script).
+
+SQLite and QR previews live in `./data` on the host (mounted at `/app/data`) so data survives container restarts.
 
 ## Next roadmap ideas
 

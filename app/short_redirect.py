@@ -62,6 +62,11 @@ def init_db() -> None:
             conn.execute("ALTER TABLE short_urls ADD COLUMN last_hit_at REAL")
         if "updated_at" not in cols:
             conn.execute("ALTER TABLE short_urls ADD COLUMN updated_at REAL")
+        if "managed" not in cols:
+            # 1 = shown in admin (legacy rows after migration); new inserts default via app logic
+            conn.execute(
+                "ALTER TABLE short_urls ADD COLUMN managed INTEGER NOT NULL DEFAULT 1"
+            )
 
         # Allow multiple codes to point to the same URL (admin flexibility); dedupe still happens in code.
         conn.execute("DROP INDEX IF EXISTS idx_short_urls_target")
@@ -94,9 +99,10 @@ def _random_code(length: int = 7) -> str:
     return "".join(secrets.choice(_CODE_ALPHABET) for _ in range(length))
 
 
-def get_or_create_code(target: str) -> str:
+def get_or_create_code(target: str, *, managed_for_new: bool = False) -> str:
     """Return existing code for target, or insert a new row and return new code."""
     now = time.time()
+    managed_val = 1 if managed_for_new else 0
     with _connect() as conn:
         row = conn.execute(
             "SELECT code FROM short_urls WHERE target = ?",
@@ -109,10 +115,10 @@ def get_or_create_code(target: str) -> str:
             try:
                 conn.execute(
                     """
-                    INSERT INTO short_urls (code, target, created, hit_count, updated_at)
-                    VALUES (?, ?, ?, 0, ?)
+                    INSERT INTO short_urls (code, target, created, hit_count, updated_at, managed)
+                    VALUES (?, ?, ?, 0, ?, ?)
                     """,
-                    (code, target, now, now),
+                    (code, target, now, now, managed_val),
                 )
                 conn.commit()
                 return code
@@ -138,6 +144,21 @@ def resolve_target(code: str) -> str | None:
             (c,),
         ).fetchone()
     return str(row["target"]) if row else None
+
+
+def get_link_managed(code: str) -> bool | None:
+    """Return True/False for managed flag, or None if code does not exist."""
+    c = (code or "").strip().lower()
+    if not c or len(c) > 32 or any(ch not in _CODE_ALPHABET for ch in c):
+        return None
+    with _connect() as conn:
+        row = conn.execute(
+            "SELECT managed FROM short_urls WHERE code = ?",
+            (c,),
+        ).fetchone()
+    if not row:
+        return None
+    return bool(row["managed"])
 
 
 def record_hit(code: str) -> None:
@@ -179,13 +200,31 @@ def delete_art_preview_png(code: str) -> None:
         path.unlink()
 
 
+def set_managed(code: str, value: bool) -> bool:
+    """Mark a short link as listed in admin (1) or one-off / hidden from list (0)."""
+    c = (code or "").strip().lower()
+    now = time.time()
+    with _connect() as conn:
+        cur = conn.execute(
+            """
+            UPDATE short_urls SET managed = ?, updated_at = ?
+            WHERE code = ?
+            """,
+            (1 if value else 0, now, c),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+
+
 def list_links(limit: int = 500) -> list[dict[str, Any]]:
+    """Only links the user chose to manage (managed=1); scans still work for all /s/ codes."""
     limit = max(1, min(5000, limit))
     with _connect() as conn:
         rows = conn.execute(
             """
-            SELECT code, target, created, updated_at, hit_count, last_hit_at
+            SELECT code, target, created, updated_at, hit_count, last_hit_at, managed
             FROM short_urls
+            WHERE managed = 1
             ORDER BY created DESC
             LIMIT ?
             """,

@@ -8,10 +8,12 @@
     :root {
       --bg: #0c0f14;
       --surface: #151a22;
+      --surface2: #1c2330;
       --border: #2a3444;
       --text: #e8edf5;
       --muted: #8b98ad;
       --accent: #5b8cff;
+      --accent2: #3d6fd9;
       --ok: #4ade80;
       --err: #f87171;
       --radius: 14px;
@@ -24,82 +26,263 @@
       background: radial-gradient(1200px 600px at 10% -10%, #1a2340 0%, var(--bg) 55%);
       color: var(--text);
       min-height: 100vh;
-      padding: 28px 20px 48px;
     }
-    .shell { max-width: 960px; margin: 0 auto; }
-    h1 { margin: 0 0 8px; font-size: 1.5rem; }
-    .muted { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 20px; }
-    a { color: var(--accent); }
-    .card {
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .shell-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+    .site-header {
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+      background: rgba(12, 15, 20, 0.85);
+      backdrop-filter: blur(10px);
+    }
+    .site-header-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 56px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .brand {
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .brand:hover { color: var(--accent); }
+    .site-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+    .nav-link {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+    .nav-link:hover {
+      color: var(--text);
+      border-color: var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .nav-link--current {
+      color: var(--accent);
+      border-color: rgba(91, 140, 255, 0.4);
+      background: rgba(91, 140, 255, 0.08);
+      cursor: default;
+      pointer-events: none;
+    }
+    .site-main {
+      flex: 1;
+      padding: 20px 0 36px;
+    }
+    .site-footer {
+      flex-shrink: 0;
+      margin-top: auto;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.22);
+      padding: 18px 0 26px;
+    }
+    .site-footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .footer-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 16px;
+    }
+    .footer-nav a {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer-nav a:hover { color: var(--accent); }
+    .footer-copy {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      opacity: 0.9;
+    }
+    .hidden { display: none !important; }
+
+    /* Login */
+    .login-wrap {
+      max-width: 420px;
+      margin: 28px auto 0;
+    }
+    .login-card {
       background: linear-gradient(180deg, var(--surface) 0%, #121722 100%);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 18px;
-      margin-bottom: 18px;
+      padding: 28px 24px 26px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
     }
-    label { display: block; font-size: 0.82rem; color: #c7d2e5; margin-bottom: 6px; }
-    input[type="password"], input[type="text"] {
+    .login-card h1 {
+      margin: 0 0 6px;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+    .login-card .sub {
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin: 0 0 22px;
+    }
+    .login-card label { display: block; font-size: 0.82rem; color: #c7d2e5; margin-bottom: 8px; }
+    .login-card input[type="password"] {
       width: 100%;
-      max-width: 420px;
-      padding: 10px 12px;
-      border-radius: 10px;
+      padding: 12px 14px;
+      border-radius: 11px;
       border: 1px solid var(--border);
-      background: #1c2330;
+      background: var(--surface2);
       color: var(--text);
-      font-size: 0.95rem;
+      font-size: 1rem;
     }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
-    button {
-      padding: 10px 16px;
+    .login-actions { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+    .login-actions button.primary {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 11px;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
+      color: white;
+      font-weight: 650;
+      font-size: 0.98rem;
+      cursor: pointer;
+    }
+    .login-actions button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      color: #dbe4f5;
+    }
+    .remember input { accent-color: var(--accent); width: auto; }
+    .login-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .login-footer a { color: var(--accent); }
+
+    /* Dashboard top bar */
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .topbar h1 { margin: 0; font-size: 1.35rem; letter-spacing: -0.02em; }
+    .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .btn {
+      padding: 9px 16px;
       border-radius: 10px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text);
       cursor: pointer;
       font-weight: 550;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    button.primary {
+    .btn:hover { border-color: #3d4d63; background: rgba(255,255,255,0.04); }
+    .btn-primary {
       border: none;
-      background: linear-gradient(180deg, var(--accent) 0%, #3d6fd9 100%);
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent2) 100%);
       color: white;
     }
-    button.danger { border-color: #7f1d1d; color: var(--err); }
-    .msg { margin-top: 12px; font-size: 0.88rem; min-height: 1.3em; }
+    .btn-primary:hover { filter: brightness(1.06); }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin: 0 0 18px;
+      max-width: 720px;
+    }
+    .hint code { background: var(--surface2); padding: 2px 7px; border-radius: 6px; font-size: 0.84em; }
+
+    .card {
+      background: linear-gradient(180deg, var(--surface) 0%, #121722 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    }
+    .card-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+    .msg { font-size: 0.88rem; min-height: 1.3em; margin-top: 8px; }
     .msg.ok { color: var(--ok); }
     .msg.err { color: var(--err); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
     th, td {
       text-align: left;
-      padding: 10px 8px;
+      padding: 12px 10px;
       border-bottom: 1px solid var(--border);
       vertical-align: top;
     }
-    th { color: var(--muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      background: rgba(0,0,0,0.15);
+    }
+    tr:hover td { background: rgba(91, 140, 255, 0.04); }
     td input.edit-target {
       width: 100%;
-      min-width: 200px;
-      padding: 6px 8px;
-      border-radius: 8px;
+      min-width: 180px;
+      padding: 8px 10px;
+      border-radius: 9px;
       border: 1px solid var(--border);
-      background: #1c2330;
+      background: var(--surface2);
       color: var(--text);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
     }
-    code { background: #1c2330; padding: 2px 6px; border-radius: 6px; font-size: 0.85em; }
+    td input.edit-target:read-only {
+      background: rgba(0, 0, 0, 0.12);
+      border-color: transparent;
+      cursor: default;
+    }
+    code { background: var(--surface2); padding: 2px 7px; border-radius: 6px; font-size: 0.85em; }
     .stats { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
-    .events-panel {
-      margin-top: 10px;
-      padding: 12px;
-      background: #0f141c;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      max-height: 220px;
-      overflow-y: auto;
-    }
-    .events-panel li { margin: 4px 0; color: var(--muted); }
-    .hidden { display: none !important; }
-    .qr-cell { width: 112px; }
+
+    .qr-cell { width: 118px; }
     .qr-cell img.qr-preview-img {
       display: block;
       border-radius: 10px;
@@ -112,68 +295,155 @@
     .qr-payload {
       word-break: break-all;
       margin-top: 8px;
-      max-width: 180px;
+      max-width: 200px;
       font-size: 0.72rem;
       line-height: 1.35;
+      color: var(--muted);
     }
-    .copy-payload {
-      margin-top: 6px;
-      padding: 4px 8px;
+    .btn-mini {
+      margin-top: 8px;
+      padding: 5px 10px;
       font-size: 0.75rem;
+      border-radius: 8px;
     }
+    .actions-cell .btn { padding: 6px 10px; font-size: 0.78rem; margin-right: 6px; margin-bottom: 4px; }
+    .table-scroll { overflow-x: auto; margin-top: 4px; border-radius: 10px; border: 1px solid var(--border); }
+    .table-scroll table { margin: 0; }
+    .table-scroll th:first-child, .table-scroll td:first-child { padding-left: 14px; }
+    .table-scroll th:last-child, .table-scroll td:last-child { padding-right: 14px; }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <h1>Short link admin</h1>
-    <p class="muted">
-      If you generated this short link on the main page with “Use short link”, the <strong>photo micro-dot QR</strong> is saved and shown here. Otherwise you see a plain black-and-white QR with the same encoded URL. Set <code>PUBLIC_BASE_URL</code> in <code>.env</code> so the printed URL matches your real domain (not <code>your-domain.example</code>). Change the <strong>destination URL</strong> below without reprinting.
-      Links do not expire by default. Set <code>ADMIN_SECRET</code> on the server, then paste that token below.
-      <a href="/">← Back to QR generator</a>
-    </p>
-
-    <div class="card">
-      <label for="token">Admin token (<code>X-Admin-Token</code>)</label>
-      <input id="token" type="password" autocomplete="off" placeholder="Paste ADMIN_SECRET" />
-      <div class="row">
-        <button type="button" class="primary" id="saveTokenBtn">Remember in browser</button>
-        <button type="button" id="clearTokenBtn">Clear saved token</button>
+  <div class="page">
+    <header class="site-header">
+      <div class="shell-inner site-header-inner">
+        <a class="brand" href="/">QRender</a>
+        <nav class="site-nav" aria-label="Primary">
+          <a class="nav-link" href="/">Generator</a>
+          <span class="nav-link nav-link--current" title="This page">Short links</span>
+          <a class="nav-link" href="/health">API status</a>
+        </nav>
       </div>
-      <div id="tokenMsg" class="msg"></div>
+    </header>
+
+    <main class="site-main">
+    <!-- Login: same secret as server ADMIN_SECRET; sent as X-Admin-Token after sign-in -->
+    <div id="loginScreen" class="login-wrap">
+      <div class="login-card">
+        <h1>Short link admin</h1>
+        <p class="sub">Sign in with the admin password configured on the server (<code>ADMIN_SECRET</code>). It is never shown on this page after login.</p>
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Admin password" />
+        <div class="login-actions">
+          <label class="remember">
+            <input type="checkbox" id="rememberMe" />
+            <span>Keep me signed in on this browser</span>
+          </label>
+          <button type="button" class="primary" id="loginBtn">Sign in</button>
+        </div>
+        <div id="loginMsg" class="msg" aria-live="polite"></div>
+        <div class="login-footer">
+          Token is sent as <code>X-Admin-Token</code> on each API request.
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="row">
-        <button type="button" class="primary" id="reloadBtn">Reload list</button>
+    <div id="adminDashboard" class="hidden">
+      <div class="shell-inner">
+      <div class="topbar">
+        <h1>Short links</h1>
+        <div class="topbar-actions">
+          <button type="button" class="btn" id="logoutBtn">Sign out</button>
+        </div>
       </div>
-      <div id="listMsg" class="msg"></div>
-      <div style="overflow-x:auto;margin-top:14px">
-        <table>
-          <thead>
-            <tr>
-              <th>QR (encoded)</th>
-              <th>Code</th>
-              <th>Destination</th>
-              <th>Hits</th>
-              <th>Last scan</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
+      <p class="hint">
+        Only short links you saved with <strong>Save to admin</strong> on the generator appear here (with photo QR preview). Hit count and last scan are shown in the table; use <strong>Edit</strong> to change the destination without reprinting the QR.
+        Set <code>PUBLIC_BASE_URL</code> in server <code>.env</code> for correct links.
+      </p>
+
+      <div class="card">
+        <div class="card-toolbar">
+          <button type="button" class="btn btn-primary" id="reloadBtn">Reload list</button>
+        </div>
+        <div id="listMsg" class="msg"></div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>QR</th>
+                <th>Code</th>
+                <th>Destination</th>
+                <th>Hits</th>
+                <th>Last scan</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
       </div>
     </div>
+
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell-inner site-footer-inner">
+        <nav class="footer-nav" aria-label="Footer">
+          <a href="/">Generator</a>
+          <a href="/health">API status</a>
+        </nav>
+        <p class="footer-copy">QRender · Managed short links</p>
+      </div>
+    </footer>
   </div>
 
   <script>
-    const STORAGE_KEY = "qrender_admin_token";
-    const tokenEl = document.getElementById("token");
-    const tokenMsg = document.getElementById("tokenMsg");
+    const STORAGE_SESSION = "qrender_admin_session";
+    const STORAGE_PERSIST = "qrender_admin_token";
+    const LEGACY_KEY = "qrender_admin_token";
+
+    const loginScreen = document.getElementById("loginScreen");
+    const adminDashboard = document.getElementById("adminDashboard");
+    const loginPassword = document.getElementById("loginPassword");
+    const rememberMe = document.getElementById("rememberMe");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginMsg = document.getElementById("loginMsg");
+    const logoutBtn = document.getElementById("logoutBtn");
     const listMsg = document.getElementById("listMsg");
     const tbody = document.getElementById("tbody");
+    const reloadBtn = document.getElementById("reloadBtn");
+
+    (function migrateLegacy() {
+      const old = localStorage.getItem(LEGACY_KEY);
+      if (old && !localStorage.getItem(STORAGE_PERSIST)) {
+        localStorage.setItem(STORAGE_PERSIST, old);
+        localStorage.removeItem(LEGACY_KEY);
+      }
+    })();
 
     function getToken() {
-      return (tokenEl.value || localStorage.getItem(STORAGE_KEY) || "").trim();
+      return (
+        sessionStorage.getItem(STORAGE_SESSION) ||
+        localStorage.getItem(STORAGE_PERSIST) ||
+        ""
+      ).trim();
+    }
+
+    function setSession(secret, persist) {
+      sessionStorage.removeItem(STORAGE_SESSION);
+      localStorage.removeItem(STORAGE_PERSIST);
+      if (persist) {
+        localStorage.setItem(STORAGE_PERSIST, secret);
+      } else {
+        sessionStorage.setItem(STORAGE_SESSION, secret);
+      }
+    }
+
+    function clearSession() {
+      sessionStorage.removeItem(STORAGE_SESSION);
+      localStorage.removeItem(STORAGE_PERSIST);
+      localStorage.removeItem(LEGACY_KEY);
     }
 
     function setMsg(el, text, ok) {
@@ -181,23 +451,16 @@
       el.className = "msg " + (ok === true ? "ok" : ok === false ? "err" : "");
     }
 
-    tokenEl.value = localStorage.getItem(STORAGE_KEY) || "";
+    function showLogin() {
+      loginScreen.classList.remove("hidden");
+      adminDashboard.classList.add("hidden");
+      loginPassword.value = "";
+    }
 
-    document.getElementById("saveTokenBtn").addEventListener("click", () => {
-      const t = tokenEl.value.trim();
-      if (!t) {
-        setMsg(tokenMsg, "Enter a token first.", false);
-        return;
-      }
-      localStorage.setItem(STORAGE_KEY, t);
-      setMsg(tokenMsg, "Saved in this browser only (localStorage).", true);
-    });
-
-    document.getElementById("clearTokenBtn").addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEY);
-      tokenEl.value = "";
-      setMsg(tokenMsg, "Cleared.", true);
-    });
+    function showDashboard() {
+      loginScreen.classList.add("hidden");
+      adminDashboard.classList.remove("hidden");
+    }
 
     async function api(path, opts) {
       const tok = getToken();
@@ -212,16 +475,113 @@
         data = { detail: txt };
       }
       if (!r.ok) {
-        const msg = (data && data.detail) ? (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join("; ") : data.detail) : ("HTTP " + r.status);
+        const msg =
+          data && data.detail
+            ? Array.isArray(data.detail)
+              ? data.detail.map((d) => d.msg).join("; ")
+              : data.detail
+            : "HTTP " + r.status;
         throw new Error(msg);
       }
       return data;
     }
 
+    async function tryResume() {
+      const t = getToken();
+      if (!t) {
+        showLogin();
+        return;
+      }
+      try {
+        await api("/api/admin/config");
+        showDashboard();
+        loadList();
+      } catch (_) {
+        clearSession();
+        showLogin();
+        setMsg(loginMsg, "Session expired or invalid. Sign in again.", false);
+      }
+    }
+
+    loginBtn.addEventListener("click", async () => {
+      const pwd = loginPassword.value.trim();
+      if (!pwd) {
+        setMsg(loginMsg, "Enter the admin password.", false);
+        return;
+      }
+      loginBtn.disabled = true;
+      setMsg(loginMsg, "Checking…", null);
+      try {
+        const r = await fetch("/api/admin/config", {
+          headers: { "X-Admin-Token": pwd },
+        });
+        const txt = await r.text();
+        if (!r.ok) {
+          let detail = txt;
+          try {
+            const j = JSON.parse(txt);
+            detail = j.detail || txt;
+          } catch (_) {}
+          throw new Error(typeof detail === "string" ? detail : "Unauthorized");
+        }
+        setSession(pwd, rememberMe.checked);
+        setMsg(loginMsg, "", null);
+        showDashboard();
+        loadList();
+      } catch (e) {
+        setMsg(loginMsg, e.message || String(e), false);
+      } finally {
+        loginBtn.disabled = false;
+      }
+    });
+
+    loginPassword.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loginBtn.click();
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      clearSession();
+      tbody.innerHTML = "";
+      showLogin();
+      setMsg(loginMsg, "Signed out.", true);
+    });
+
     function fmtTs(ts) {
       if (ts == null || ts === "") return "—";
       const d = new Date(ts * 1000);
       return isNaN(d.getTime()) ? "—" : d.toLocaleString();
+    }
+
+    function exitAllEditModes(exceptTr) {
+      tbody.querySelectorAll("tr[data-editing='1']").forEach((tr) => {
+        if (exceptTr && tr === exceptTr) return;
+        setRowEditing(tr, false);
+      });
+    }
+
+    function setRowEditing(tr, editing) {
+      const inp = tr.querySelector("input.edit-target");
+      if (!inp) return;
+      const editBtn = tr.querySelector(".edit-row");
+      const saveBtn = tr.querySelector(".save-row");
+      const cancelBtn = tr.querySelector(".cancel-edit");
+      if (!editBtn || !saveBtn || !cancelBtn) return;
+      if (editing) {
+        exitAllEditModes(tr);
+        inp.readOnly = false;
+        tr.dataset.editing = "1";
+        editBtn.classList.add("hidden");
+        saveBtn.classList.remove("hidden");
+        cancelBtn.classList.remove("hidden");
+        requestAnimationFrame(() => inp.focus());
+      } else {
+        inp.readOnly = true;
+        inp.value = inp.dataset.originalTarget || "";
+        delete tr.dataset.editing;
+        editBtn.classList.remove("hidden");
+        saveBtn.classList.add("hidden");
+        cancelBtn.classList.add("hidden");
+      }
     }
 
     function row(link, payloadFull) {
@@ -231,17 +591,17 @@
       tdQr.className = "qr-cell";
       const qrImg = document.createElement("img");
       qrImg.className = "qr-preview-img";
-      qrImg.alt = "Loading QR…";
+      qrImg.alt = "Loading…";
       qrImg.dataset.code = link.code;
       tdQr.appendChild(qrImg);
       const cap = document.createElement("div");
-      cap.className = "stats qr-payload";
+      cap.className = "qr-payload";
       cap.textContent = payloadFull;
       tdQr.appendChild(cap);
       const copyBtn = document.createElement("button");
       copyBtn.type = "button";
-      copyBtn.className = "copy-payload";
-      copyBtn.textContent = "Copy payload";
+      copyBtn.className = "btn btn-mini copy-payload";
+      copyBtn.textContent = "Copy URL";
       copyBtn.dataset.copy = payloadFull;
       tdQr.appendChild(copyBtn);
 
@@ -265,7 +625,9 @@
       const inp = document.createElement("input");
       inp.className = "edit-target";
       inp.type = "text";
+      inp.readOnly = true;
       inp.dataset.code = link.code;
+      inp.dataset.originalTarget = link.target || "";
       inp.value = link.target || "";
 
       const tdHits = document.createElement("td");
@@ -277,31 +639,31 @@
       tdLast.textContent = fmtTs(link.last_hit_at);
 
       const tdAct = document.createElement("td");
+      tdAct.className = "actions-cell";
+      const bEdit = document.createElement("button");
+      bEdit.type = "button";
+      bEdit.className = "btn edit-row";
+      bEdit.dataset.code = link.code;
+      bEdit.textContent = "Edit";
       const bSave = document.createElement("button");
       bSave.type = "button";
-      bSave.className = "save-row";
+      bSave.className = "btn btn-primary save-row hidden";
       bSave.dataset.code = link.code;
-      bSave.textContent = "Save URL";
-      const bEv = document.createElement("button");
-      bEv.type = "button";
-      bEv.dataset.code = link.code;
-      bEv.className = "show-events";
-      bEv.textContent = "Scans";
+      bSave.textContent = "Save";
+      const bCancel = document.createElement("button");
+      bCancel.type = "button";
+      bCancel.className = "btn cancel-edit hidden";
+      bCancel.dataset.code = link.code;
+      bCancel.textContent = "Cancel";
       const bDel = document.createElement("button");
       bDel.type = "button";
-      bDel.className = "danger del-row";
+      bDel.className = "btn del-row";
       bDel.dataset.code = link.code;
       bDel.textContent = "Delete";
-      const panel = document.createElement("div");
-      panel.className = "events-panel hidden";
-      panel.dataset.eventsFor = link.code;
-      panel.appendChild(document.createElement("ul"));
+      tdAct.appendChild(bEdit);
       tdAct.appendChild(bSave);
-      tdAct.appendChild(document.createTextNode(" "));
-      tdAct.appendChild(bEv);
-      tdAct.appendChild(document.createTextNode(" "));
+      tdAct.appendChild(bCancel);
       tdAct.appendChild(bDel);
-      tdAct.appendChild(panel);
 
       tr.appendChild(tdQr);
       tr.appendChild(tdCode);
@@ -324,10 +686,7 @@
       const imgs = tbody.querySelectorAll("img.qr-preview-img");
       for (const img of imgs) {
         const code = img.dataset.code;
-        if (!code || !tok) {
-          img.alt = "Set token above";
-          continue;
-        }
+        if (!code || !tok) continue;
         try {
           let r = await fetch("/api/admin/links/" + encodeURIComponent(code) + "/art.png", {
             headers: { "X-Admin-Token": tok },
@@ -338,56 +697,84 @@
             });
           }
           if (!r.ok) {
-            img.alt = "QR failed";
+            img.alt = "—";
             continue;
           }
           const blob = await r.blob();
           img.src = URL.createObjectURL(blob);
           img.alt = "QR";
         } catch (_) {
-          img.alt = "QR error";
+          img.alt = "—";
         }
       }
     }
 
     async function loadList() {
-      revokeQrBlobUrls();
-      setMsg(listMsg, "Loading…", null);
-      tbody.innerHTML = "";
+      reloadBtn.disabled = true;
+      reloadBtn.setAttribute("aria-busy", "true");
       try {
-        const cfg = await api("/api/admin/config");
-        const base = (cfg && cfg.public_base_url) ? String(cfg.public_base_url).replace(/\/$/, "") : "";
-        const links = await api("/api/admin/links");
-        if (!links.length) {
-          setMsg(listMsg, "No short links yet. Generate one with “Use short link” in the main UI.", null);
-          return;
+        revokeQrBlobUrls();
+        setMsg(listMsg, "Loading…", null);
+        tbody.innerHTML = "";
+        try {
+          const cfg = await api("/api/admin/config");
+          const base =
+            cfg && cfg.public_base_url ? String(cfg.public_base_url).replace(/\/$/, "") : "";
+          const links = await api("/api/admin/links");
+          if (!links.length) {
+            setMsg(
+              listMsg,
+              "No managed short links yet — on the generator use short link + “Save to admin”, then generate.",
+              null,
+            );
+            return;
+          }
+          setMsg(listMsg, "", null);
+          links.forEach((l) => {
+            const payloadFull = base + "/s/" + l.code;
+            tbody.appendChild(row(l, payloadFull));
+          });
+          await fillQrPreviewImages();
+        } catch (e) {
+          if ((e.message || "").includes("403") || (e.message || "").toLowerCase().includes("invalid")) {
+            clearSession();
+            showLogin();
+            setMsg(loginMsg, "Session invalid. Sign in again.", false);
+            return;
+          }
+          setMsg(listMsg, e.message || String(e), false);
         }
-        setMsg(listMsg, "", null);
-        links.forEach((l) => {
-          const payloadFull = base + "/s/" + l.code;
-          tbody.appendChild(row(l, payloadFull));
-        });
-        await fillQrPreviewImages();
-      } catch (e) {
-        setMsg(listMsg, e.message || String(e), false);
+      } finally {
+        reloadBtn.disabled = false;
+        reloadBtn.removeAttribute("aria-busy");
       }
     }
 
     tbody.addEventListener("click", async (e) => {
       const t = e.target;
-      if (t.classList.contains("copy-payload")) {
-        const txt = t.getAttribute("data-copy") || "";
+      const copySrc = t.closest("[data-copy]");
+      if (copySrc && copySrc.getAttribute("data-copy")) {
         try {
-          await navigator.clipboard.writeText(txt);
-          setMsg(listMsg, "Copied encoded URL to clipboard.", true);
+          await navigator.clipboard.writeText(copySrc.getAttribute("data-copy") || "");
+          setMsg(listMsg, "Copied to clipboard.", true);
         } catch (_) {
-          setMsg(listMsg, "Could not copy (clipboard permission).", false);
+          setMsg(listMsg, "Clipboard failed.", false);
         }
+        return;
+      }
+      if (t.classList.contains("edit-row")) {
+        const tr = t.closest("tr");
+        if (tr) setRowEditing(tr, true);
+        return;
+      }
+      if (t.classList.contains("cancel-edit")) {
+        const tr = t.closest("tr");
+        if (tr) setRowEditing(tr, false);
         return;
       }
       if (t.classList.contains("save-row")) {
         const code = t.getAttribute("data-code");
-        const inp = tbody.querySelector("input.edit-target[data-code=\"" + code + "\"]");
+        const inp = tbody.querySelector('input.edit-target[data-code="' + code + '"]');
         if (!inp) return;
         try {
           await api("/api/admin/links/" + encodeURIComponent(code), {
@@ -400,6 +787,7 @@
         } catch (err) {
           setMsg(listMsg, err.message || String(err), false);
         }
+        return;
       }
       if (t.classList.contains("del-row")) {
         const code = t.getAttribute("data-code");
@@ -411,30 +799,28 @@
         } catch (err) {
           setMsg(listMsg, err.message || String(err), false);
         }
-      }
-      if (t.classList.contains("show-events")) {
-        const code = t.getAttribute("data-code");
-        const panel = tbody.querySelector(".events-panel[data-events-for=\"" + code + "\"]");
-        if (!panel) return;
-        const ul = panel.querySelector("ul");
-        const hidden = panel.classList.toggle("hidden");
-        if (hidden) return;
-        ul.innerHTML = "<li>Loading…</li>";
-        try {
-          const events = await api("/api/admin/links/" + encodeURIComponent(code) + "/events?limit=50");
-          if (!events.length) {
-            ul.innerHTML = "<li>No scans recorded yet.</li>";
-            return;
-          }
-          ul.innerHTML = events.map((ev) => "<li>" + fmtTs(ev.ts) + "</li>").join("");
-        } catch (err) {
-          ul.innerHTML = "<li>" + (err.message || String(err)) + "</li>";
-        }
+        return;
       }
     });
 
-    document.getElementById("reloadBtn").addEventListener("click", loadList);
-    loadList();
+    reloadBtn.addEventListener("click", loadList);
+
+    tbody.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      const inp = e.target;
+      if (!inp || !inp.classList.contains("edit-target")) return;
+      const tr = inp.closest("tr");
+      if (tr && tr.dataset.editing === "1") {
+        e.preventDefault();
+        setRowEditing(tr, false);
+      }
+    });
+
+    tryResume().finally(() => {
+      if (!loginScreen.classList.contains("hidden")) {
+        loginPassword.focus();
+      }
+    });
   </script>
 </body>
 </html>

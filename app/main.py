@@ -1,3 +1,4 @@
+import html
 import os
 from io import BytesIO
 from pathlib import Path
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, RedirectResponse, Response, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from app import short_redirect
@@ -54,9 +55,23 @@ def _hex_to_rgb(value: str) -> tuple[int, int, int]:
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 
+def _index_html() -> str:
+    template = (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    repo = (os.environ.get("PUBLIC_GITHUB_URL") or "").strip()
+    if repo:
+        safe = html.escape(repo)
+        badge = (
+            f'<a class="nav-link" href="{safe}" target="_blank" rel="noopener noreferrer">'
+            "GitHub</a>"
+        )
+    else:
+        badge = ""
+    return template.replace("{{GITHUB_LINK}}", badge)
+
+
 @app.get("/")
-async def home() -> FileResponse:
-    return FileResponse(_STATIC_DIR / "index.html", media_type="text/html; charset=utf-8")
+async def home() -> HTMLResponse:
+    return HTMLResponse(_index_html(), media_type="text/html; charset=utf-8")
 
 
 @app.get("/health")
@@ -129,11 +144,17 @@ def api_admin_link_art_png(
     """Last micro-dot + photo QR saved when this short link was generated (if any)."""
     if not short_redirect.resolve_target(code):
         raise HTTPException(status_code=404, detail="Short link not found")
+    managed = short_redirect.get_link_managed(code)
+    if managed is False:
+        raise HTTPException(
+            status_code=404,
+            detail="This short link was not added to admin — enable “Save to admin” when generating.",
+        )
     path = short_redirect.art_preview_path(code)
     if not path.is_file():
         raise HTTPException(
             status_code=404,
-            detail="No saved art QR yet — open the main page, enable short link, and generate once.",
+            detail="No saved art QR yet — enable short link + Save to admin on the generator, then generate.",
         )
     return FileResponse(path, media_type="image/png")
 
@@ -187,6 +208,11 @@ def api_admin_link_events(
 ) -> list[dict]:
     if not short_redirect.resolve_target(code):
         raise HTTPException(status_code=404, detail="Short link not found")
+    if short_redirect.get_link_managed(code) is False:
+        raise HTTPException(
+            status_code=404,
+            detail="This short link was not added to admin — scan stats are hidden for one-off links.",
+        )
     return short_redirect.list_events_for_code(code, limit=limit)
 
 
@@ -207,6 +233,7 @@ async def qr_art(
     finder_dark_color: str = Form("#000000"),
     finder_light_color: str = Form("#FFFFFF"),
     use_short_url: int = Form(0),
+    save_to_admin: int = Form(0),
 ) -> StreamingResponse:
     if not content.strip():
         raise HTTPException(status_code=400, detail="content cannot be empty")
@@ -233,6 +260,13 @@ async def qr_art(
         raise HTTPException(status_code=400, detail="finder_shape must be square or circle")
     if use_short_url not in (0, 1):
         raise HTTPException(status_code=400, detail="use_short_url must be 0 or 1")
+    if save_to_admin not in (0, 1):
+        raise HTTPException(status_code=400, detail="save_to_admin must be 0 or 1")
+    if save_to_admin and not use_short_url:
+        raise HTTPException(
+            status_code=400,
+            detail="save_to_admin requires use_short_url (short link mode).",
+        )
 
     try:
         finder_dark_rgb = _hex_to_rgb(finder_dark_color)
@@ -245,6 +279,8 @@ async def qr_art(
         raise HTTPException(status_code=400, detail="image file is empty")
 
     payload = content.strip()
+    code: str | None = None
+    want_admin = bool(save_to_admin)
     if use_short_url:
         try:
             normalized = short_redirect.normalize_url(payload)
@@ -253,7 +289,7 @@ async def qr_art(
                 status_code=400,
                 detail=f"Short link mode needs a valid http(s) URL: {err}",
             ) from err
-        code = short_redirect.get_or_create_code(normalized)
+        code = short_redirect.get_or_create_code(normalized, managed_for_new=want_admin)
         base = _effective_public_base(request)
         payload = f"{base}/s/{code}"
 
@@ -283,7 +319,8 @@ async def qr_art(
 
     decode_ok = validate_qr_code(output, payload, verbose=True)
 
-    if use_short_url:
+    if use_short_url and code is not None and want_admin:
+        short_redirect.set_managed(code, True)
         short_redirect.save_art_preview_png(code, output)
 
     buffer = BytesIO()
