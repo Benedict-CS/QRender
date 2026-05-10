@@ -228,7 +228,6 @@ async def qr_art(
     fit_mode: str = Form("contain"),
     cover_zoom: float = Form(1.0),
     micro_dot_radius_frac: float = Form(0.22),
-    micro_smart_contrast: int = Form(1),
     finder_shape: str = Form("square"),
     finder_dark_color: str = Form("#000000"),
     finder_light_color: str = Form("#FFFFFF"),
@@ -254,8 +253,6 @@ async def qr_art(
             status_code=400,
             detail="micro_dot_radius_frac must be between 0.08 and 0.35",
         )
-    if micro_smart_contrast not in (0, 1):
-        raise HTTPException(status_code=400, detail="micro_smart_contrast must be 0 or 1")
     if finder_shape not in ("square", "circle"):
         raise HTTPException(status_code=400, detail="finder_shape must be square or circle")
     if use_short_url not in (0, 1):
@@ -302,7 +299,7 @@ async def qr_art(
             mesh_dark_rgb=(0, 0, 0),
             mesh_light_rgb=(255, 255, 255),
             micro_dot_radius_frac=micro_dot_radius_frac,
-            micro_smart_contrast=bool(micro_smart_contrast),
+            micro_smart_contrast=True,
             finder_shape=finder_shape,  # validated: square | circle
             finder_dark_rgb=finder_dark_rgb,
             finder_light_rgb=finder_light_rgb,

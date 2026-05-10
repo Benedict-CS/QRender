@@ -1,10 +1,12 @@
+# Project `.env` is loaded into the container (ADMIN_SECRET, PUBLIC_BASE_URL, …).
+# Compose also reads `.env` on the host for ${PORT} in the port mapping.
+# Create `.env` first: `cp .env.example .env` or `python3 scripts/setup_env.py`
 services:
   web:
     build: .
     ports:
       - "${PORT:-8000}:8000"
-    environment:
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8000}
-      ADMIN_SECRET: ${ADMIN_SECRET:-}
+    env_file:
+      - .env
     volumes:
       - ./data:/app/data

@@ -122,6 +122,16 @@ Alternatively: `docker compose up --build` (same as the script).
 
 SQLite and QR previews live in `./data` on the host (mounted at `/app/data`) so data survives container restarts.
 
+### Admin login vs `ADMIN_SECRET`
+
+Compose injects the project **`.env`** into the container (`env_file` in `docker-compose.yml`), so **`ADMIN_SECRET` should match** what you put in that file for local runs.
+
+If the UI shows **invalid admin token** or kicks you back to login:
+
+1. **Restart** the app after editing `.env` (`docker compose up -d --build` or restart uvicorn).
+2. **Sign in again** on `/admin` — the browser may still hold an **old** token from before you changed the secret (session/local storage).
+3. Ensure you run Compose from the **project root** where `.env` lives, or copy `.env` there (`python3 scripts/setup_env.py` helps bootstrap it).
+
 ## Next roadmap ideas
 
 - Stable Diffusion + ControlNet integration

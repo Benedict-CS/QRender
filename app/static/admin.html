@@ -321,7 +321,6 @@
         <nav class="site-nav" aria-label="Primary">
           <a class="nav-link" href="/">Generator</a>
           <span class="nav-link nav-link--current" title="This page">Short links</span>
-          <a class="nav-link" href="/health">API status</a>
         </nav>
       </div>
     </header>
@@ -391,7 +390,6 @@
       <div class="shell-inner site-footer-inner">
         <nav class="footer-nav" aria-label="Footer">
           <a href="/">Generator</a>
-          <a href="/health">API status</a>
         </nav>
         <p class="footer-copy">QRender · Managed short links</p>
       </div>
@@ -499,7 +497,11 @@
       } catch (_) {
         clearSession();
         showLogin();
-        setMsg(loginMsg, "Session expired or invalid. Sign in again.", false);
+        setMsg(
+          loginMsg,
+          "Saved token does not match this server — sign in again (e.g. after changing ADMIN_SECRET in .env).",
+          false,
+        );
       }
     }
 
@@ -739,7 +741,11 @@
           if ((e.message || "").includes("403") || (e.message || "").toLowerCase().includes("invalid")) {
             clearSession();
             showLogin();
-            setMsg(loginMsg, "Session invalid. Sign in again.", false);
+            setMsg(
+            loginMsg,
+            "Saved token does not match this server — sign in again if ADMIN_SECRET changed.",
+            false,
+          );
             return;
           }
           setMsg(listMsg, e.message || String(e), false);

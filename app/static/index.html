@@ -378,21 +378,6 @@
     @keyframes qrender-spin {
       to { transform: rotate(360deg); }
     }
-    kbd {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.72rem;
-      padding: 2px 6px;
-      border-radius: 5px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--text);
-    }
-    .kbd-hint {
-      margin-top: 12px;
-      font-size: 0.76rem;
-      color: var(--muted);
-      line-height: 1.45;
-    }
     .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
     button.primary {
       flex: 1;
@@ -532,13 +517,16 @@
           <label for="image">Background image</label>
           <input id="image" type="file" accept="image/*" />
 
-          <p class="muted" style="margin-top:8px;">Drag to pan; slider or wheel zooms inside the frame.</p>
+          <p class="muted" style="margin-top:8px;">
+            Square export — not a crop tool: <strong>drag</strong> to move the photo,
+            <strong>slider</strong> or <strong>mouse wheel</strong> on the frame to zoom in or out.
+          </p>
 
           <input type="hidden" id="crop_anchor_x" value="50" />
           <input type="hidden" id="crop_anchor_y" value="50" />
           <div id="framingEditorWrap" class="framing-editor-wrap hidden">
-            <label style="margin-top:0">Adjust photo</label>
-            <div class="crop-frame" id="cropFrame" title="Drag to pan; slider or wheel to zoom">
+            <label style="margin-top:0">Pan &amp; zoom</label>
+            <div class="crop-frame" id="cropFrame" title="Drag to move; slider or wheel to zoom">
               <img id="cropImg" alt="" />
               <div class="crop-circle-overlay" aria-hidden="true"></div>
             </div>
@@ -547,25 +535,20 @@
               <input type="range" id="cover_zoom" min="50" max="300" value="100" step="5" />
               <span class="zoom-ico" title="Zoom in">■</span>
             </div>
-            <p class="crop-hint"><span class="range-val" id="coverZoomVal">100</span>% · Outline matches export.</p>
+            <p class="crop-hint"><span class="range-val" id="coverZoomVal">100</span>% zoom · White outline = exported square</p>
           </div>
 
           <label for="micro_dot_radius_pct">Dot radius <span class="range-val" id="dotSizeLabel">22%</span> of cell</label>
           <input type="range" id="micro_dot_radius_pct" min="8" max="35" value="22" step="1" />
-
-          <div class="toggle">
-            <input type="checkbox" id="micro_smart_contrast" checked />
-            <span>Sharper dots on busy photos</span>
-          </div>
         </div>
 
         <div class="toggle">
           <input type="checkbox" id="livePreview" checked />
-          <span>Auto-update preview <span class="muted" style="font-size:0.82em"> · shortly after you change settings</span></span>
+          <span>Live preview</span>
         </div>
 
         <div class="actions">
-          <button type="button" class="primary" id="generateBtn" aria-describedby="kbdHint">
+          <button type="button" class="primary" id="generateBtn">
             Generate
           </button>
           <button type="button" class="ghost" id="downloadBtn" disabled title="Available after a successful render">
@@ -575,7 +558,6 @@
             Reset
           </button>
         </div>
-        <p class="kbd-hint" id="kbdHint"></p>
         <div class="status" id="status"></div>
         <div class="error" id="error" role="alert"></div>
       </div>
@@ -591,7 +573,7 @@
             <ol class="preview-steps">
               <li>Set link or text</li>
               <li>Pick background image</li>
-              <li>Adjust crop and dots, then download</li>
+              <li>Zoom &amp; drag to frame the photo, set dot size — download PNG</li>
             </ol>
           </div>
         </div>
@@ -606,7 +588,6 @@
         <nav class="footer-nav" aria-label="Footer">
           {{GITHUB_LINK}}
           <a class="footer-static" href="/admin">Admin</a>
-          <a class="footer-static" href="/health">API status</a>
         </nav>
         <p class="footer-copy">Photo micro-dot QR · Short links optional</p>
       </div>
@@ -632,7 +613,6 @@
     const coverZoomVal = document.getElementById("coverZoomVal");
     const microDotRadiusPctEl = document.getElementById("micro_dot_radius_pct");
     const dotSizeLabel = document.getElementById("dotSizeLabel");
-    const microSmartContrastEl = document.getElementById("micro_smart_contrast");
     const imageEl = document.getElementById("image");
     const livePreviewEl = document.getElementById("livePreview");
     const generateBtn = document.getElementById("generateBtn");
@@ -644,7 +624,6 @@
     const decodeCheckEl = document.getElementById("decodeCheckEl");
     const shortLinkBundle = document.getElementById("shortLinkBundle");
     const shortLinkHintEl = document.getElementById("shortLinkHint");
-    const kbdHintEl = document.getElementById("kbdHint");
 
     let currentBlobUrl = null;
     let debounceTimer = null;
@@ -671,7 +650,7 @@
         '<ol class="preview-steps">' +
         "<li>Set link or text</li>" +
         "<li>Pick background image</li>" +
-        "<li>Adjust crop and dots, then download</li>" +
+        "<li>Zoom and drag to frame the photo, set dot size — download PNG</li>" +
         "</ol></div>"
       );
     }
@@ -825,7 +804,6 @@
       coverZoomVal.textContent = "100";
       microDotRadiusPctEl.value = "22";
       syncDotSizeLabel();
-      microSmartContrastEl.checked = true;
       livePreviewEl.checked = true;
       errorEl.textContent = "";
       if (cropState.iw) {
@@ -912,7 +890,6 @@
         form.append("fit_mode", "cover");
         form.append("cover_zoom", (Number(coverZoomEl.value) / 100).toFixed(2));
         form.append("micro_dot_radius_frac", frac);
-        form.append("micro_smart_contrast", microSmartContrastEl.checked ? "1" : "0");
         form.append("finder_shape", finderShapeEl.value);
         form.append("finder_dark_color", finderDarkColorEl.value);
         form.append("finder_light_color", finderLightColorEl.value);
@@ -1004,7 +981,6 @@
       finderShapeEl.addEventListener(evt, () => scheduleGenerate("finder"));
       finderDarkColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
       finderLightColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
-      microSmartContrastEl.addEventListener(evt, () => scheduleGenerate("contrast"));
     });
 
     imageEl.addEventListener("change", () => {
@@ -1013,21 +989,9 @@
       scheduleGenerate("image");
     });
     livePreviewEl.addEventListener("change", () => {
-      statusEl.textContent = livePreviewEl.checked
-        ? "Auto-update on"
-        : "Auto-update off — click Generate when you want a fresh render";
+      statusEl.textContent = livePreviewEl.checked ? "Live preview on" : "Live preview off";
       statusEl.classList.toggle("live", livePreviewEl.checked);
       if (livePreviewEl.checked) scheduleGenerate("live on");
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter" || !(e.ctrlKey || e.metaKey)) return;
-      if (e.repeat) return;
-      const tag = (e.target && e.target.tagName) || "";
-      if (tag === "TEXTAREA") return;
-      if (generateBtn.disabled) return;
-      e.preventDefault();
-      generateNow("manual");
     });
 
     generateBtn.addEventListener("click", () => generateNow("manual"));
@@ -1044,12 +1008,6 @@
     syncDotSizeLabel();
     syncSaveToAdminEnabled();
     syncGenerateEnabled();
-    if (kbdHintEl) {
-      const mac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform || "") || navigator.userAgent.includes("Mac");
-      kbdHintEl.innerHTML = mac
-        ? "Shortcut: <kbd>Cmd</kbd> + <kbd>Enter</kbd> to generate"
-        : "Shortcut: <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to generate";
-    }
   </script>
 </body>
 </html>
