@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>QRender</title>
+  <link rel="icon" href="/static/logo.png" type="image/png" />
   <style>
     :root {
       --bg: #0c0f14;
@@ -56,6 +57,9 @@
       padding-bottom: 10px;
     }
     .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       font-size: 1.2rem;
       font-weight: 700;
       letter-spacing: -0.02em;
@@ -64,6 +68,15 @@
     }
     .brand:hover {
       color: var(--accent);
+    }
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      flex-shrink: 0;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
     }
     .site-nav {
       display: flex;
@@ -591,7 +604,10 @@
   <div class="page">
     <header class="site-header">
       <div class="shell-inner site-header-inner">
-        <a class="brand" href="/">QRender</a>
+        <a class="brand" href="/">
+          <img class="brand-mark" src="/static/logo.png" width="40" height="40" alt="" decoding="async" />
+          <span>QRender</span>
+        </a>
         <nav class="site-nav" aria-label="Primary">
           {{GITHUB_LINK}}
           <a class="nav-link nav-link--accent" href="/admin">Admin</a>

@@ -10,6 +10,7 @@ load_dotenv()
 
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app import gallery_winlab, short_redirect
@@ -351,3 +352,6 @@ async def qr_art(
         media_type="image/png",
         headers={"X-QR-Encoded-Content": payload[:512]},
     )
+
+
+app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
