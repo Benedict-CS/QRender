@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Short links · QRender</title>
+  <style>
+    :root {
+      --bg: #0c0f14;
+      --surface: #151a22;
+      --border: #2a3444;
+      --text: #e8edf5;
+      --muted: #8b98ad;
+      --accent: #5b8cff;
+      --ok: #4ade80;
+      --err: #f87171;
+      --radius: 14px;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: radial-gradient(1200px 600px at 10% -10%, #1a2340 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 28px 20px 48px;
+    }
+    .shell { max-width: 960px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    .muted { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0 0 20px; }
+    a { color: var(--accent); }
+    .card {
+      background: linear-gradient(180deg, var(--surface) 0%, #121722 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+    label { display: block; font-size: 0.82rem; color: #c7d2e5; margin-bottom: 6px; }
+    input[type="password"], input[type="text"] {
+      width: 100%;
+      max-width: 420px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #1c2330;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    button {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 550;
+      font-size: 0.9rem;
+    }
+    button.primary {
+      border: none;
+      background: linear-gradient(180deg, var(--accent) 0%, #3d6fd9 100%);
+      color: white;
+    }
+    button.danger { border-color: #7f1d1d; color: var(--err); }
+    .msg { margin-top: 12px; font-size: 0.88rem; min-height: 1.3em; }
+    .msg.ok { color: var(--ok); }
+    .msg.err { color: var(--err); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    td input.edit-target {
+      width: 100%;
+      min-width: 200px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #1c2330;
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+    code { background: #1c2330; padding: 2px 6px; border-radius: 6px; font-size: 0.85em; }
+    .stats { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
+    .events-panel {
+      margin-top: 10px;
+      padding: 12px;
+      background: #0f141c;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .events-panel li { margin: 4px 0; color: var(--muted); }
+    .hidden { display: none !important; }
+    .qr-cell { width: 112px; }
+    .qr-cell img.qr-preview-img {
+      display: block;
+      border-radius: 10px;
+      background: #fff;
+      padding: 6px;
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+    }
+    .qr-payload {
+      word-break: break-all;
+      margin-top: 8px;
+      max-width: 180px;
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+    .copy-payload {
+      margin-top: 6px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <h1>Short link admin</h1>
+    <p class="muted">
+      If you generated this short link on the main page with “Use short link”, the <strong>photo micro-dot QR</strong> is saved and shown here. Otherwise you see a plain black-and-white QR with the same encoded URL. Set <code>PUBLIC_BASE_URL</code> in <code>.env</code> so the printed URL matches your real domain (not <code>your-domain.example</code>). Change the <strong>destination URL</strong> below without reprinting.
+      Links do not expire by default. Set <code>ADMIN_SECRET</code> on the server, then paste that token below.
+      <a href="/">← Back to QR generator</a>
+    </p>
+
+    <div class="card">
+      <label for="token">Admin token (<code>X-Admin-Token</code>)</label>
+      <input id="token" type="password" autocomplete="off" placeholder="Paste ADMIN_SECRET" />
+      <div class="row">
+        <button type="button" class="primary" id="saveTokenBtn">Remember in browser</button>
+        <button type="button" id="clearTokenBtn">Clear saved token</button>
+      </div>
+      <div id="tokenMsg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <button type="button" class="primary" id="reloadBtn">Reload list</button>
+      </div>
+      <div id="listMsg" class="msg"></div>
+      <div style="overflow-x:auto;margin-top:14px">
+        <table>
+          <thead>
+            <tr>
+              <th>QR (encoded)</th>
+              <th>Code</th>
+              <th>Destination</th>
+              <th>Hits</th>
+              <th>Last scan</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "qrender_admin_token";
+    const tokenEl = document.getElementById("token");
+    const tokenMsg = document.getElementById("tokenMsg");
+    const listMsg = document.getElementById("listMsg");
+    const tbody = document.getElementById("tbody");
+
+    function getToken() {
+      return (tokenEl.value || localStorage.getItem(STORAGE_KEY) || "").trim();
+    }
+
+    function setMsg(el, text, ok) {
+      el.textContent = text || "";
+      el.className = "msg " + (ok === true ? "ok" : ok === false ? "err" : "");
+    }
+
+    tokenEl.value = localStorage.getItem(STORAGE_KEY) || "";
+
+    document.getElementById("saveTokenBtn").addEventListener("click", () => {
+      const t = tokenEl.value.trim();
+      if (!t) {
+        setMsg(tokenMsg, "Enter a token first.", false);
+        return;
+      }
+      localStorage.setItem(STORAGE_KEY, t);
+      setMsg(tokenMsg, "Saved in this browser only (localStorage).", true);
+    });
+
+    document.getElementById("clearTokenBtn").addEventListener("click", () => {
+      localStorage.removeItem(STORAGE_KEY);
+      tokenEl.value = "";
+      setMsg(tokenMsg, "Cleared.", true);
+    });
+
+    async function api(path, opts) {
+      const tok = getToken();
+      const headers = Object.assign({}, opts && opts.headers);
+      if (tok) headers["X-Admin-Token"] = tok;
+      const r = await fetch(path, Object.assign({}, opts, { headers }));
+      const txt = await r.text();
+      let data = null;
+      try {
+        data = txt ? JSON.parse(txt) : null;
+      } catch (_) {
+        data = { detail: txt };
+      }
+      if (!r.ok) {
+        const msg = (data && data.detail) ? (Array.isArray(data.detail) ? data.detail.map((d) => d.msg).join("; ") : data.detail) : ("HTTP " + r.status);
+        throw new Error(msg);
+      }
+      return data;
+    }
+
+    function fmtTs(ts) {
+      if (ts == null || ts === "") return "—";
+      const d = new Date(ts * 1000);
+      return isNaN(d.getTime()) ? "—" : d.toLocaleString();
+    }
+
+    function row(link, payloadFull) {
+      const tr = document.createElement("tr");
+
+      const tdQr = document.createElement("td");
+      tdQr.className = "qr-cell";
+      const qrImg = document.createElement("img");
+      qrImg.className = "qr-preview-img";
+      qrImg.alt = "Loading QR…";
+      qrImg.dataset.code = link.code;
+      tdQr.appendChild(qrImg);
+      const cap = document.createElement("div");
+      cap.className = "stats qr-payload";
+      cap.textContent = payloadFull;
+      tdQr.appendChild(cap);
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "copy-payload";
+      copyBtn.textContent = "Copy payload";
+      copyBtn.dataset.copy = payloadFull;
+      tdQr.appendChild(copyBtn);
+
+      const shortPath = "/s/" + link.code;
+
+      const tdCode = document.createElement("td");
+      const codeEl = document.createElement("code");
+      codeEl.textContent = link.code;
+      tdCode.appendChild(codeEl);
+      const divLink = document.createElement("div");
+      divLink.className = "stats";
+      const a = document.createElement("a");
+      a.href = shortPath;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = shortPath;
+      divLink.appendChild(a);
+      tdCode.appendChild(divLink);
+
+      const tdTarget = document.createElement("td");
+      const inp = document.createElement("input");
+      inp.className = "edit-target";
+      inp.type = "text";
+      inp.dataset.code = link.code;
+      inp.value = link.target || "";
+
+      const tdHits = document.createElement("td");
+      tdHits.className = "stats";
+      tdHits.textContent = String(link.hit_count || 0);
+
+      const tdLast = document.createElement("td");
+      tdLast.className = "stats";
+      tdLast.textContent = fmtTs(link.last_hit_at);
+
+      const tdAct = document.createElement("td");
+      const bSave = document.createElement("button");
+      bSave.type = "button";
+      bSave.className = "save-row";
+      bSave.dataset.code = link.code;
+      bSave.textContent = "Save URL";
+      const bEv = document.createElement("button");
+      bEv.type = "button";
+      bEv.dataset.code = link.code;
+      bEv.className = "show-events";
+      bEv.textContent = "Scans";
+      const bDel = document.createElement("button");
+      bDel.type = "button";
+      bDel.className = "danger del-row";
+      bDel.dataset.code = link.code;
+      bDel.textContent = "Delete";
+      const panel = document.createElement("div");
+      panel.className = "events-panel hidden";
+      panel.dataset.eventsFor = link.code;
+      panel.appendChild(document.createElement("ul"));
+      tdAct.appendChild(bSave);
+      tdAct.appendChild(document.createTextNode(" "));
+      tdAct.appendChild(bEv);
+      tdAct.appendChild(document.createTextNode(" "));
+      tdAct.appendChild(bDel);
+      tdAct.appendChild(panel);
+
+      tr.appendChild(tdQr);
+      tr.appendChild(tdCode);
+      tdTarget.appendChild(inp);
+      tr.appendChild(tdTarget);
+      tr.appendChild(tdHits);
+      tr.appendChild(tdLast);
+      tr.appendChild(tdAct);
+      return tr;
+    }
+
+    function revokeQrBlobUrls() {
+      tbody.querySelectorAll("img.qr-preview-img").forEach((img) => {
+        if (img.src && img.src.startsWith("blob:")) URL.revokeObjectURL(img.src);
+      });
+    }
+
+    async function fillQrPreviewImages() {
+      const tok = getToken();
+      const imgs = tbody.querySelectorAll("img.qr-preview-img");
+      for (const img of imgs) {
+        const code = img.dataset.code;
+        if (!code || !tok) {
+          img.alt = "Set token above";
+          continue;
+        }
+        try {
+          let r = await fetch("/api/admin/links/" + encodeURIComponent(code) + "/art.png", {
+            headers: { "X-Admin-Token": tok },
+          });
+          if (!r.ok) {
+            r = await fetch("/api/admin/links/" + encodeURIComponent(code) + "/qr.png", {
+              headers: { "X-Admin-Token": tok },
+            });
+          }
+          if (!r.ok) {
+            img.alt = "QR failed";
+            continue;
+          }
+          const blob = await r.blob();
+          img.src = URL.createObjectURL(blob);
+          img.alt = "QR";
+        } catch (_) {
+          img.alt = "QR error";
+        }
+      }
+    }
+
+    async function loadList() {
+      revokeQrBlobUrls();
+      setMsg(listMsg, "Loading…", null);
+      tbody.innerHTML = "";
+      try {
+        const cfg = await api("/api/admin/config");
+        const base = (cfg && cfg.public_base_url) ? String(cfg.public_base_url).replace(/\/$/, "") : "";
+        const links = await api("/api/admin/links");
+        if (!links.length) {
+          setMsg(listMsg, "No short links yet. Generate one with “Use short link” in the main UI.", null);
+          return;
+        }
+        setMsg(listMsg, "", null);
+        links.forEach((l) => {
+          const payloadFull = base + "/s/" + l.code;
+          tbody.appendChild(row(l, payloadFull));
+        });
+        await fillQrPreviewImages();
+      } catch (e) {
+        setMsg(listMsg, e.message || String(e), false);
+      }
+    }
+
+    tbody.addEventListener("click", async (e) => {
+      const t = e.target;
+      if (t.classList.contains("copy-payload")) {
+        const txt = t.getAttribute("data-copy") || "";
+        try {
+          await navigator.clipboard.writeText(txt);
+          setMsg(listMsg, "Copied encoded URL to clipboard.", true);
+        } catch (_) {
+          setMsg(listMsg, "Could not copy (clipboard permission).", false);
+        }
+        return;
+      }
+      if (t.classList.contains("save-row")) {
+        const code = t.getAttribute("data-code");
+        const inp = tbody.querySelector("input.edit-target[data-code=\"" + code + "\"]");
+        if (!inp) return;
+        try {
+          await api("/api/admin/links/" + encodeURIComponent(code), {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ target: inp.value.trim() }),
+          });
+          setMsg(listMsg, "Updated " + code + ".", true);
+          loadList();
+        } catch (err) {
+          setMsg(listMsg, err.message || String(err), false);
+        }
+      }
+      if (t.classList.contains("del-row")) {
+        const code = t.getAttribute("data-code");
+        if (!confirm("Delete /s/" + code + " permanently?")) return;
+        try {
+          await api("/api/admin/links/" + encodeURIComponent(code), { method: "DELETE" });
+          setMsg(listMsg, "Deleted " + code + ".", true);
+          loadList();
+        } catch (err) {
+          setMsg(listMsg, err.message || String(err), false);
+        }
+      }
+      if (t.classList.contains("show-events")) {
+        const code = t.getAttribute("data-code");
+        const panel = tbody.querySelector(".events-panel[data-events-for=\"" + code + "\"]");
+        if (!panel) return;
+        const ul = panel.querySelector("ul");
+        const hidden = panel.classList.toggle("hidden");
+        if (hidden) return;
+        ul.innerHTML = "<li>Loading…</li>";
+        try {
+          const events = await api("/api/admin/links/" + encodeURIComponent(code) + "/events?limit=50");
+          if (!events.length) {
+            ul.innerHTML = "<li>No scans recorded yet.</li>";
+            return;
+          }
+          ul.innerHTML = events.map((ev) => "<li>" + fmtTs(ev.ts) + "</li>").join("");
+        } catch (err) {
+          ul.innerHTML = "<li>" + (err.message || String(err)) + "</li>";
+        }
+      }
+    });
+
+    document.getElementById("reloadBtn").addEventListener("click", loadList);
+    loadList();
+  </script>
+</body>
+</html>

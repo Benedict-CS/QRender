@@ -1,15 +1,42 @@
+import os
 from io import BytesIO
 from pathlib import Path
-from typing import cast
+from typing import Annotated, cast
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, RedirectResponse, Response, StreamingResponse
+from pydantic import BaseModel, Field
 
 from app import short_redirect
 from app.qr_art import FitMode, build_art_qr_photo_microdot
 from app.qr_validate import validate_qr_code
 
 app = FastAPI(title="QRender API", version="0.1.0")
+
+
+def require_admin(
+    x_admin_token: Annotated[str | None, Header(alias="X-Admin-Token")] = None,
+    authorization: Annotated[str | None, Header()] = None,
+) -> None:
+    secret = (os.environ.get("ADMIN_SECRET") or "").strip()
+    if not secret:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin API disabled: set ADMIN_SECRET in the environment.",
+        )
+    token = (x_admin_token or "").strip()
+    if not token and authorization and authorization.lower().startswith("bearer "):
+        token = authorization[7:].strip()
+    if not token or token != secret:
+        raise HTTPException(status_code=403, detail="Invalid admin token")
+
+
+class ShortLinkUpdateBody(BaseModel):
+    target: str = Field(..., min_length=1, max_length=short_redirect.MAX_TARGET_LEN)
 
 
 @app.on_event("startup")
@@ -44,12 +71,123 @@ def _effective_public_base(request: Request) -> str:
     return str(request.base_url).rstrip("/")
 
 
+def _admin_short_link_qr_png(payload: str) -> bytes:
+    """Standard black-on-white QR PNG for admin preview (same encoded string as micro-dot export)."""
+    import qrcode
+    from io import BytesIO
+
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=4,
+        border=2,
+    )
+    qr.add_data(payload)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 @app.get("/s/{code}")
 def follow_short_link(code: str) -> RedirectResponse:
     target = short_redirect.resolve_target(code)
     if not target:
         raise HTTPException(status_code=404, detail="Short link not found")
+    short_redirect.record_hit(code)
     return RedirectResponse(target, status_code=302)
+
+
+@app.get("/admin")
+async def admin_ui() -> FileResponse:
+    return FileResponse(_STATIC_DIR / "admin.html", media_type="text/html; charset=utf-8")
+
+
+@app.get("/api/admin/config")
+def api_admin_config(
+    request: Request,
+    _: Annotated[None, Depends(require_admin)],
+) -> dict[str, str]:
+    """Same base URL used when building short-link QR payloads (PUBLIC_BASE_URL or request origin)."""
+    return {"public_base_url": _effective_public_base(request)}
+
+
+@app.get("/api/admin/links")
+def api_admin_list_links(
+    _: Annotated[None, Depends(require_admin)],
+    limit: int = 500,
+) -> list[dict]:
+    return short_redirect.list_links(limit=limit)
+
+
+@app.get("/api/admin/links/{code}/art.png")
+def api_admin_link_art_png(
+    code: str,
+    _: Annotated[None, Depends(require_admin)],
+) -> FileResponse:
+    """Last micro-dot + photo QR saved when this short link was generated (if any)."""
+    if not short_redirect.resolve_target(code):
+        raise HTTPException(status_code=404, detail="Short link not found")
+    path = short_redirect.art_preview_path(code)
+    if not path.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="No saved art QR yet — open the main page, enable short link, and generate once.",
+        )
+    return FileResponse(path, media_type="image/png")
+
+
+@app.get("/api/admin/links/{code}/qr.png")
+def api_admin_link_qr_png(
+    request: Request,
+    code: str,
+    _: Annotated[None, Depends(require_admin)],
+) -> Response:
+    if not short_redirect.resolve_target(code):
+        raise HTTPException(status_code=404, detail="Short link not found")
+    c = code.strip().lower()
+    payload = f"{_effective_public_base(request)}/s/{c}"
+    return Response(
+        content=_admin_short_link_qr_png(payload),
+        media_type="image/png",
+    )
+
+
+@app.patch("/api/admin/links/{code}")
+def api_admin_update_link(
+    code: str,
+    body: ShortLinkUpdateBody,
+    _: Annotated[None, Depends(require_admin)],
+) -> dict:
+    try:
+        normalized = short_redirect.normalize_url(body.target)
+    except ValueError as err:
+        raise HTTPException(status_code=400, detail=str(err)) from err
+    if not short_redirect.update_link_target(code, normalized):
+        raise HTTPException(status_code=404, detail="Short link not found")
+    return {"ok": True, "code": code.strip().lower(), "target": normalized}
+
+
+@app.delete("/api/admin/links/{code}")
+def api_admin_delete_link(
+    code: str,
+    _: Annotated[None, Depends(require_admin)],
+) -> dict:
+    if not short_redirect.delete_link(code):
+        raise HTTPException(status_code=404, detail="Short link not found")
+    return {"ok": True}
+
+
+@app.get("/api/admin/links/{code}/events")
+def api_admin_link_events(
+    code: str,
+    _: Annotated[None, Depends(require_admin)],
+    limit: int = 100,
+) -> list[dict]:
+    if not short_redirect.resolve_target(code):
+        raise HTTPException(status_code=404, detail="Short link not found")
+    return short_redirect.list_events_for_code(code, limit=limit)
 
 
 @app.post("/qr/art")
@@ -144,6 +282,9 @@ async def qr_art(
         raise HTTPException(status_code=400, detail=str(err)) from err
 
     decode_ok = validate_qr_code(output, payload, verbose=True)
+
+    if use_short_url:
+        short_redirect.save_art_preview_png(code, output)
 
     buffer = BytesIO()
     output.save(buffer, format="PNG")

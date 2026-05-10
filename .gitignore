@@ -26,7 +26,10 @@ htmlcov/
 
 # Runtime data (short-link SQLite; created on first use)
 data/*.sqlite3
+data/*.sqlite3-shm
+data/*.sqlite3-wal
 data/*.db
+data/qr_previews/
 
 # IDE / OS
 .idea/
