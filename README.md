@@ -10,18 +10,15 @@ Open-source web app for **photo micro-dot style QR codes** (art QR with a backgr
 [![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
-## Demo
+## Demo / UI
 
-**Live site:** [https://qrender.ben.winlab.tw](https://qrender.ben.winlab.tw)
-
-- Generator UI at `/`
-- Admin (needs `ADMIN_SECRET`) at `/admin`
+- Generator: `/`
+- Admin (needs `ADMIN_SECRET`): `/admin`
 
 ## Why this repo
 
 - **Micro-dot art QR** — `POST /qr/art` blends your photo under a scannable QR pattern.
 - **Short links** — optional `https://your-host/s/<code>` in the QR; change the destination later in admin without reprinting.
-- **WinLab gallery roulette** — `GET /r/winlab-random` returns a **302** to a random **still image** from the public [WinLab gallery](https://gallery.winlab.tw/) (videos skipped). Cache TTL: `WINLAB_GALLERY_CACHE_SECONDS` (default 300). Good for a QR that shows a different lab photo on each open.
 
 > This is deterministic image compositing (Pillow + `qrcode`), not an SD/ControlNet pipeline — easy to extend later.
 
@@ -84,14 +81,6 @@ curl -X POST "http://127.0.0.1:8000/qr/art" \
 
 Response header `X-QR-Encoded-Content` reflects the string encoded in the QR (after short-link rewrite when enabled).
 
-### Random WinLab gallery image (redirect)
-
-```bash
-curl -sSI "http://127.0.0.1:8000/r/winlab-random" | grep -i '^location:'
-```
-
-Each request may redirect to a different image URL. Configure scrape URL / cache in `.env` — see `.env.example`.
-
 ## Short links (`/s/...`)
 
 With **“Use short link”** in the UI, the QR can encode `https://your-host/s/<code>` while the real URL is stored in SQLite under `data/short_urls.sqlite3`:
@@ -101,7 +90,7 @@ With **“Use short link”** in the UI, the QR can encode `https://your-host/s/
 
 Set **`ADMIN_SECRET`**, open **`/admin`**, paste the token, and manage links or view events.
 
-Production: set **`PUBLIC_BASE_URL`** (e.g. `https://qrender.ben.winlab.tw`) so generated QR payloads use the correct host.
+Production: set **`PUBLIC_BASE_URL`** to your public `https://…` origin so generated QR payloads use the correct host.
 
 Admin API (header `X-Admin-Token`):
 
