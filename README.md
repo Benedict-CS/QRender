@@ -2,6 +2,14 @@
 
 Open-source web app for **photo micro-dot style QR codes** (art QR with a background image, corner finders, and short-link mode).
 
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Uvicorn](https://img.shields.io/badge/Uvicorn-0.30+-4051B5?style=for-the-badge)](https://www.uvicorn.org/)
+[![Pillow](https://img.shields.io/badge/Pillow-10+-fbbf24?style=for-the-badge)](https://python-pillow.org/)
+[![qrcode](https://img.shields.io/badge/qrcode-PIL-111827?style=for-the-badge)](https://github.com/lincolnloop/python-qrcode)
+[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+
 ## Demo
 
 **Live site:** [https://qrender.ben.winlab.tw](https://qrender.ben.winlab.tw)
@@ -11,14 +19,7 @@ Open-source web app for **photo micro-dot style QR codes** (art QR with a backgr
 
 ## Tech stack
 
-| Layer | Choice |
-|--------|--------|
-| Runtime | Python 3.11+ |
-| API / server | [FastAPI](https://fastapi.tiangolo.com/), [Uvicorn](https://www.uvicorn.org/) |
-| QR & images | [qrcode](https://github.com/lincolnloop/python-qrcode) + [Pillow](https://python-pillow.org/) |
-| Short links & analytics | SQLite (`data/short_urls.sqlite3`) |
-| Frontend | Static HTML, CSS, and plain JS (no bundler) |
-| Config | [python-dotenv](https://github.com/theskumar/python-dotenv), optional Docker / Compose |
+Badges above match **`pyproject.toml`** (minimum versions). Also in the stack: **static HTML/CSS/JS** (no bundler), **python-dotenv**, **python-multipart**.
 
 ## Why this repo
 
