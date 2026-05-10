@@ -2,7 +2,7 @@ from io import BytesIO
 import math
 from typing import Literal
 
-from PIL import Image, ImageChops, ImageDraw
+from PIL import Image, ImageChops, ImageDraw, ImageOps
 import qrcode
 from qrcode.constants import ERROR_CORRECT_H
 
@@ -19,6 +19,12 @@ FitMode = Literal["cover", "contain"]
 StippleDotShape = Literal["circle", "square"]
 MicroFinderStyle = Literal["square", "rounded", "bullseye"]
 MicrodotFinderShape = Literal["square", "circle"]
+
+
+def _open_uploaded_image(data: bytes) -> Image.Image:
+    """Decode bytes and apply EXIF orientation so pixel layout matches browser display."""
+    im = Image.open(BytesIO(data))
+    return ImageOps.exif_transpose(im)
 
 
 def _make_qr_instance(
@@ -476,7 +482,7 @@ def _cover_crop_to_size(
         raise ValueError("Invalid image dimensions")
     ax = max(0.0, min(1.0, anchor_x))
     ay = max(0.0, min(1.0, anchor_y))
-    zm = max(0.5, min(cover_zoom, 3.0))
+    zm = max(0.25, min(cover_zoom, 3.0))
     scale = max(tw / iw, th / ih) * zm
     nw = max(1, int(round(iw * scale)))
     nh = max(1, int(round(ih * scale)))
@@ -546,8 +552,8 @@ def _fit_source_for_art(
         raise ValueError("crop anchors must be between 0 and 1")
     if fit_mode not in ("cover", "contain"):
         raise ValueError("fit_mode must be cover or contain")
-    if not (0.5 <= cover_zoom <= 3.0):
-        raise ValueError("cover_zoom must be between 0.5 and 3")
+    if not (0.25 <= cover_zoom <= 3.0):
+        raise ValueError("cover_zoom must be between 0.25 and 3")
     img = source_rgb
     if prepixelate_max > 0:
         w, h = img.size
@@ -601,7 +607,7 @@ def build_art_qr_modules(
     bd = qr.border
 
     try:
-        source = Image.open(BytesIO(source_image_bytes)).convert("RGB")
+        source = _open_uploaded_image(source_image_bytes).convert("RGB")
     except Exception as err:  # noqa: BLE001
         raise ValueError("Invalid image file") from err
 
@@ -680,7 +686,7 @@ def build_art_qr_halftone(
     bd = qr.border
 
     try:
-        source = Image.open(BytesIO(source_image_bytes)).convert("RGB")
+        source = _open_uploaded_image(source_image_bytes).convert("RGB")
     except Exception as err:  # noqa: BLE001
         raise ValueError("Invalid image file") from err
 
@@ -769,7 +775,7 @@ def build_art_qr_photo_mesh(
     bd = qr.border
 
     try:
-        source = Image.open(BytesIO(source_image_bytes)).convert("RGB")
+        source = _open_uploaded_image(source_image_bytes).convert("RGB")
     except Exception as err:  # noqa: BLE001
         raise ValueError("Invalid image file") from err
 
@@ -885,7 +891,7 @@ def build_art_qr_photo_stipple(
     bd = qr.border
 
     try:
-        source = Image.open(BytesIO(source_image_bytes)).convert("RGB")
+        source = _open_uploaded_image(source_image_bytes).convert("RGB")
     except Exception as err:  # noqa: BLE001
         raise ValueError("Invalid image file") from err
 
@@ -1206,7 +1212,7 @@ def build_art_qr_photo_microdot(
     bd = qr.border
 
     try:
-        source = Image.open(BytesIO(source_image_bytes)).convert("RGB")
+        source = _open_uploaded_image(source_image_bytes).convert("RGB")
     except Exception as err:  # noqa: BLE001
         raise ValueError("Invalid image file") from err
 
@@ -1294,7 +1300,7 @@ def build_art_qr_overlay(
     qr_image = build_basic_qr(content=content, box_size=box_size, border=border)
 
     try:
-        source = Image.open(BytesIO(source_image_bytes)).convert("RGBA")
+        source = _open_uploaded_image(source_image_bytes).convert("RGBA")
     except Exception as err:  # noqa: BLE001
         raise ValueError("Invalid image file") from err
 

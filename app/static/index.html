@@ -214,6 +214,28 @@
       background: var(--surface2);
       cursor: pointer;
     }
+    .finder-color-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .finder-color-row input[type="color"] {
+      flex: 1;
+      min-width: 0;
+    }
+    button.finder-pick-btn {
+      flex-shrink: 0;
+      width: 30px;
+      min-width: 30px;
+      height: 30px;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    button.finder-pick-btn svg {
+      display: block;
+    }
     .file-input-hidden {
       position: absolute !important;
       width: 1px !important;
@@ -295,6 +317,12 @@
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
     }
     .crop-frame:active { cursor: grabbing; }
+    .crop-frame.is-picking-color {
+      cursor: crosshair;
+      outline: 2px solid var(--accent);
+      outline-offset: 0;
+    }
+    .crop-frame.is-picking-color:active { cursor: crosshair; }
     .crop-frame img {
       position: absolute;
       left: 0;
@@ -454,12 +482,6 @@
     .publish-before-generate .toggle {
       margin-top: 0;
     }
-    .field-hint {
-      margin: 10px 0 0;
-      font-size: 0.78rem;
-      line-height: 1.45;
-      color: var(--muted);
-    }
     .card-head {
       display: flex;
       flex-wrap: wrap;
@@ -563,15 +585,6 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.45);
     }
     .preview-placeholder { color: var(--muted); font-size: 0.9rem; text-align: center; padding: 24px; }
-    .decode-check {
-      margin: 14px 0 0;
-      font-size: 0.88rem;
-      line-height: 1.45;
-      min-height: 1.35em;
-    }
-    .decode-check--ok { color: var(--ok); font-weight: 600; }
-    .decode-check--warn { color: var(--err); font-weight: 600; }
-    .decode-check--muted { color: var(--muted); font-weight: 400; }
   </style>
 </head>
 <body>
@@ -620,32 +633,6 @@
               </div>
             </div>
           </div>
-          <div class="row2">
-            <div>
-              <label for="box_size">Module size (pixels)</label>
-              <input id="box_size" type="number" min="4" max="32" value="12" />
-            </div>
-            <div>
-              <label for="border">Quiet zone (modules)</label>
-              <input id="border" type="number" min="1" max="8" value="2" />
-            </div>
-          </div>
-
-          <label for="finder_shape">Finder shape (corner markers)</label>
-          <select id="finder_shape">
-            <option value="square" selected>Square (standard)</option>
-            <option value="circle">Circle (bullseye)</option>
-          </select>
-          <div class="row2" style="margin-top:10px">
-            <div>
-              <label for="finder_dark_color">Finder dark</label>
-              <input id="finder_dark_color" type="color" value="#000000" />
-            </div>
-            <div>
-              <label for="finder_light_color">Finder light</label>
-              <input id="finder_light_color" type="color" value="#ffffff" />
-            </div>
-          </div>
         </div>
 
         <div class="section">
@@ -659,11 +646,6 @@
             <p id="imageFileStatus" class="file-picker-status">No file selected</p>
           </div>
 
-          <p class="muted" style="margin-top:8px;">
-            Square export — not a crop tool: <strong>drag</strong> to move the photo,
-            <strong>slider</strong> or <strong>mouse wheel</strong> on the frame to zoom in or out.
-          </p>
-
           <input type="hidden" id="crop_anchor_x" value="50" />
           <input type="hidden" id="crop_anchor_y" value="50" />
           <div id="framingEditorWrap" class="framing-editor-wrap hidden">
@@ -674,14 +656,60 @@
             </div>
             <div class="zoom-toolbar">
               <span class="zoom-ico" title="Zoom out">▢</span>
-              <input type="range" id="cover_zoom" min="50" max="300" value="100" step="5" />
+              <input type="range" id="cover_zoom" min="25" max="300" value="50" step="5" />
               <span class="zoom-ico" title="Zoom in">■</span>
             </div>
-            <p class="crop-hint"><span class="range-val" id="coverZoomVal">100</span>% zoom · White outline = exported square</p>
+            <p class="crop-hint"><span class="range-val" id="coverZoomVal">50</span>% zoom</p>
           </div>
 
           <label for="micro_dot_radius_pct">Dot radius <span class="range-val" id="dotSizeLabel">22%</span> of cell</label>
           <input type="range" id="micro_dot_radius_pct" min="8" max="35" value="22" step="1" />
+
+          <label for="finder_shape">Finder shape (corner markers)</label>
+          <select id="finder_shape">
+            <option value="square" selected>Square (standard)</option>
+            <option value="circle">Circle (bullseye)</option>
+          </select>
+          <div class="row2" style="margin-top:10px">
+            <div>
+              <label for="finder_dark_color">Finder dark</label>
+              <div class="finder-color-row">
+                <input id="finder_dark_color" type="color" value="#000000" />
+                <button
+                  type="button"
+                  class="ghost finder-pick-btn"
+                  id="finderDarkPickBtn"
+                  title="Click your photo in Pan &amp; zoom to pick this color (no magnifier)"
+                  aria-label="Pick finder dark color from photo"
+                  disabled
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m2 22 5-5" />
+                    <path d="M14.5 4.5a2.12 2.12 0 0 1 3 3L8 17l-4 1 1-4Z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label for="finder_light_color">Finder light</label>
+              <div class="finder-color-row">
+                <input id="finder_light_color" type="color" value="#ffffff" />
+                <button
+                  type="button"
+                  class="ghost finder-pick-btn"
+                  id="finderLightPickBtn"
+                  title="Click your photo in Pan &amp; zoom to pick this color (no magnifier)"
+                  aria-label="Pick finder light color from photo"
+                  disabled
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m2 22 5-5" />
+                    <path d="M14.5 4.5a2.12 2.12 0 0 1 3 3L8 17l-4 1 1-4Z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="toggle">
@@ -691,10 +719,9 @@
 
         <div class="publish-before-generate">
           <div class="toggle">
-            <input type="checkbox" id="save_to_admin" disabled aria-describedby="saveAdminHint" />
-            <span><strong>Save to admin</strong> — after Generate: list + photo preview on this server</span>
+            <input type="checkbox" id="save_to_admin" disabled />
+            <span>Save — Manage in Admin</span>
           </div>
-          <p id="saveAdminHint" class="field-hint" role="status"></p>
         </div>
 
         <div class="actions">
@@ -729,7 +756,6 @@
             </ol>
           </div>
         </div>
-        <p id="decodeCheckEl" class="decode-check decode-check--muted" aria-live="polite"></p>
       </div>
     </div>
       </div>
@@ -754,11 +780,14 @@
     const saveToAdminEl = document.getElementById("save_to_admin");
     const shortUrlDisplay = document.getElementById("shortUrlDisplay");
     const copyShortUrlBtn = document.getElementById("copyShortUrlBtn");
-    const boxSizeEl = document.getElementById("box_size");
-    const borderEl = document.getElementById("border");
+    const QR_BOX_SIZE = 12;
+    const QR_BORDER = 2;
     const finderShapeEl = document.getElementById("finder_shape");
     const finderDarkColorEl = document.getElementById("finder_dark_color");
     const finderLightColorEl = document.getElementById("finder_light_color");
+    const finderDarkPickBtn = document.getElementById("finderDarkPickBtn");
+    const finderLightPickBtn = document.getElementById("finderLightPickBtn");
+    let finderPickMode = null;
     const cropAnchorXEl = document.getElementById("crop_anchor_x");
     const cropAnchorYEl = document.getElementById("crop_anchor_y");
     const framingEditorWrap = document.getElementById("framingEditorWrap");
@@ -777,10 +806,7 @@
     const previewEl = document.getElementById("preview");
     const errorEl = document.getElementById("error");
     const statusEl = document.getElementById("status");
-    const decodeCheckEl = document.getElementById("decodeCheckEl");
     const shortLinkBundle = document.getElementById("shortLinkBundle");
-    const saveAdminHintEl = document.getElementById("saveAdminHint");
-
     let currentBlobUrl = null;
     let debounceTimer = null;
     let inFlight = false;
@@ -832,22 +858,65 @@
       );
     }
 
+    function rgbToHex(r, g, b) {
+      const h = (n) => n.toString(16).padStart(2, "0");
+      return "#" + h(r) + h(g) + h(b);
+    }
+
+    function sampleHexFromCropImgAtClient(clientX, clientY) {
+      const nw = cropImg.naturalWidth;
+      const nh = cropImg.naturalHeight;
+      if (!nw || !nh || !cropState.iw) return null;
+      const rect = cropFrame.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const W = cropState.W;
+      const H = cropState.H;
+      if (W < 1e-6 || H < 1e-6) return null;
+      const u = (x - cropState.ox) / W;
+      const v = (y - cropState.oy) / H;
+      if (u < 0 || u > 1 || v < 0 || v > 1) return null;
+      const sx = Math.max(0, Math.min(nw - 1, Math.round(u * (nw - 1))));
+      const sy = Math.max(0, Math.min(nh - 1, Math.round(v * (nh - 1))));
+      const cv = document.createElement("canvas");
+      cv.width = nw;
+      cv.height = nh;
+      const ctx = cv.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(cropImg, 0, 0);
+      const d = ctx.getImageData(sx, sy, 1, 1).data;
+      return rgbToHex(d[0], d[1], d[2]);
+    }
+
+    function endFinderPickMode() {
+      finderPickMode = null;
+      if (!cropFrame.classList.contains("is-picking-color")) return;
+      cropFrame.classList.remove("is-picking-color");
+      if (statusEl.textContent.startsWith("Click the photo")) {
+        statusEl.textContent = "";
+        statusEl.classList.remove("live");
+      }
+    }
+
+    function pickFinderColor(targetInput) {
+      errorEl.textContent = "";
+      if (!imageEl.files || !imageEl.files.length) {
+        errorEl.textContent = "Choose a background image first.";
+        scrollErrorIntoView();
+        return;
+      }
+      endFinderPickMode();
+      finderPickMode = { target: targetInput };
+      cropFrame.classList.add("is-picking-color");
+      statusEl.textContent = "Click the photo in Pan & zoom to pick this color (Esc to cancel).";
+      statusEl.classList.add("live");
+    }
+
     function syncGenerateEnabled() {
       const hasImg = Boolean(imageEl.files && imageEl.files.length > 0);
       generateBtn.disabled = !hasImg;
-    }
-
-    function updateSaveAdminHints() {
-      if (!saveAdminHintEl) return;
-      const u = useShortUrlEl.checked;
-      const s = saveToAdminEl.checked;
-      if (!u) {
-        saveAdminHintEl.textContent = "Enable Short link (QR section above) to use this.";
-      } else if (s) {
-        saveAdminHintEl.textContent = "Next Generate saves listing + preview in Admin.";
-      } else {
-        saveAdminHintEl.textContent = "Leave off for one-offs; turn on to track and edit in Admin.";
-      }
+      if (finderDarkPickBtn) finderDarkPickBtn.disabled = !hasImg;
+      if (finderLightPickBtn) finderLightPickBtn.disabled = !hasImg;
+      if (!hasImg) endFinderPickMode();
     }
 
     function clampPan() {
@@ -959,23 +1028,21 @@
       saveToAdminEl.disabled = !on;
       if (!on) saveToAdminEl.checked = false;
       if (shortLinkBundle) shortLinkBundle.classList.toggle("is-on", on);
-      updateSaveAdminHints();
       clearShortUrlDisplay();
     }
 
     function resetControlsToDefaults() {
+      endFinderPickMode();
       contentEl.value = "";
       useShortUrlEl.checked = false;
       syncSaveToAdminEnabled();
-      boxSizeEl.value = "12";
-      borderEl.value = "2";
       finderShapeEl.value = "square";
       finderDarkColorEl.value = "#000000";
       finderLightColorEl.value = "#ffffff";
       cropAnchorXEl.value = "50";
       cropAnchorYEl.value = "50";
-      coverZoomEl.value = "100";
-      coverZoomVal.textContent = "100";
+      coverZoomEl.value = "50";
+      coverZoomVal.textContent = "50";
       microDotRadiusPctEl.value = "22";
       syncDotSizeLabel();
       livePreviewEl.checked = true;
@@ -991,33 +1058,6 @@
       scheduleGenerate("reset");
     }
 
-    function clearDecodeCheck() {
-      decodeCheckEl.textContent = "";
-      decodeCheckEl.className = "decode-check decode-check--muted";
-    }
-
-    function setDecodeCheckFromHeader(raw) {
-      if (raw == null) {
-        decodeCheckEl.textContent = "Server did not report a scan check (redeploy backend?).";
-        decodeCheckEl.className = "decode-check decode-check--muted";
-        return;
-      }
-      const v = String(raw).toLowerCase();
-      if (v === "true") {
-        decodeCheckEl.textContent = "✅ Scan check: image decodes and matches the encoded payload.";
-        decodeCheckEl.className = "decode-check decode-check--ok";
-        return;
-      }
-      if (v === "false") {
-        decodeCheckEl.textContent =
-          "❌ Scan check: decode failed or payload mismatch. Try a larger dot size, quiet zone, or contrast.";
-        decodeCheckEl.className = "decode-check decode-check--warn";
-        return;
-      }
-      decodeCheckEl.textContent = "";
-      decodeCheckEl.className = "decode-check decode-check--muted";
-    }
-
     function setPreviewLoading() {
       if (currentBlobUrl) {
         URL.revokeObjectURL(currentBlobUrl);
@@ -1028,7 +1068,6 @@
         '<div class="preview-spinner" aria-hidden="true"></div>' +
         "<span>Rendering…</span></div>";
       downloadBtn.disabled = true;
-      clearDecodeCheck();
     }
 
     function showPreviewFromBlob(blob) {
@@ -1065,8 +1104,8 @@
         const frac = (Number(microDotRadiusPctEl.value) / 100).toFixed(2);
         const form = new FormData();
         form.append("content", contentEl.value);
-        form.append("box_size", boxSizeEl.value);
-        form.append("border", borderEl.value);
+        form.append("box_size", String(QR_BOX_SIZE));
+        form.append("border", String(QR_BORDER));
         form.append("crop_anchor_x", (Number(cropAnchorXEl.value) / 100).toFixed(4));
         form.append("crop_anchor_y", (Number(cropAnchorYEl.value) / 100).toFixed(4));
         form.append("fit_mode", "cover");
@@ -1091,15 +1130,12 @@
           clearShortUrlDisplay();
         }
         syncShortUrlCopyUi();
-        const decodeOk = resp.headers.get("X-QR-Decode-Ok");
-        setDecodeCheckFromHeader(decodeOk);
         const blob = await resp.blob();
         showPreviewFromBlob(blob);
         statusEl.textContent = (livePreviewEl.checked ? "Live: " : "") + (reason || "OK");
         statusEl.classList.add("live");
       } catch (e) {
         previewEl.innerHTML = previewEmptyHtml();
-        clearDecodeCheck();
         clearShortUrlDisplay();
         errorEl.textContent = e.message || String(e);
         scrollErrorIntoView();
@@ -1123,6 +1159,20 @@
       scheduleGenerate("dots");
     });
     cropFrame.addEventListener("pointerdown", (e) => {
+      if (finderPickMode) {
+        e.preventDefault();
+        const hex = sampleHexFromCropImgAtClient(e.clientX, e.clientY);
+        if (hex) {
+          finderPickMode.target.value = hex;
+          finderPickMode.target.dispatchEvent(new Event("input", { bubbles: true }));
+          scheduleGenerate("finder");
+          endFinderPickMode();
+        } else {
+          errorEl.textContent = "Click on the photo inside the square, not the empty margins.";
+          scrollErrorIntoView();
+        }
+        return;
+      }
       framingDrag = { px: e.clientX, py: e.clientY, ox: cropState.ox, oy: cropState.oy };
       cropFrame.setPointerCapture(e.pointerId);
     });
@@ -1143,7 +1193,7 @@
       (e) => {
         e.preventDefault();
         const z = Number(coverZoomEl.value);
-        coverZoomEl.value = String(clamp(z + (e.deltaY > 0 ? -5 : 5), 50, 300));
+        coverZoomEl.value = String(clamp(z + (e.deltaY > 0 ? -5 : 5), 25, 300));
         coverZoomVal.textContent = coverZoomEl.value;
         cropState.zoom = Number(coverZoomEl.value) / 100;
         layoutFramingEditor(false);
@@ -1159,7 +1209,6 @@
     });
 
     useShortUrlEl.addEventListener("change", syncSaveToAdminEnabled);
-    saveToAdminEl.addEventListener("change", updateSaveAdminHints);
 
     copyShortUrlBtn.addEventListener("click", async () => {
       const t = shortUrlDisplay.value.trim();
@@ -1179,16 +1228,23 @@
       setTimeout(() => { copyShortUrlBtn.textContent = prev; }, 1400);
     });
 
+    if (finderDarkPickBtn) {
+      finderDarkPickBtn.addEventListener("click", () => pickFinderColor(finderDarkColorEl));
+    }
+    if (finderLightPickBtn) {
+      finderLightPickBtn.addEventListener("click", () => pickFinderColor(finderLightColorEl));
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") endFinderPickMode();
+    });
+
     ["input", "change"].forEach((evt) => {
       contentEl.addEventListener(evt, () => scheduleGenerate("content"));
       useShortUrlEl.addEventListener(evt, () => scheduleGenerate("short"));
-      boxSizeEl.addEventListener(evt, () => scheduleGenerate("size"));
-      borderEl.addEventListener(evt, () => scheduleGenerate("border"));
       finderShapeEl.addEventListener(evt, () => scheduleGenerate("finder"));
       finderDarkColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
       finderLightColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
     });
-
     imageEl.addEventListener("change", () => {
       syncImageFileLabel();
       initFramingFromImage();

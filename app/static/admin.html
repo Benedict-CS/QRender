@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Short links · QRender</title>
+  <title>Admin · QRender</title>
   <style>
     :root {
       --bg: #0c0f14;
@@ -89,6 +89,20 @@
       background: rgba(91, 140, 255, 0.08);
       cursor: default;
       pointer-events: none;
+    }
+    .nav-link--accent {
+      color: var(--accent);
+      border-color: rgba(91, 140, 255, 0.4);
+      background: rgba(91, 140, 255, 0.08);
+    }
+    .nav-link--accent:hover {
+      border-color: var(--accent);
+      background: rgba(91, 140, 255, 0.14);
+    }
+    button.nav-link {
+      cursor: pointer;
+      font: inherit;
+      font-family: inherit;
     }
     .site-main {
       flex: 1;
@@ -228,17 +242,6 @@
     }
     .login-footer a { color: var(--accent); }
 
-    /* Dashboard top bar */
-    .topbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .topbar h1 { margin: 0; font-size: 1.35rem; letter-spacing: -0.02em; }
-    .topbar-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     .btn {
       padding: 9px 16px;
       border-radius: 10px;
@@ -355,7 +358,8 @@
         <a class="brand" href="/">QRender</a>
         <nav class="site-nav" aria-label="Primary">
           <a class="nav-link" href="/">Generator</a>
-          <span class="nav-link nav-link--current" title="This page">Short links</span>
+          <span id="headerNavAdmin" class="nav-link nav-link--current" title="This page">Admin</span>
+          <button type="button" class="nav-link nav-link--accent hidden" id="headerSignOut">Sign out</button>
         </nav>
       </div>
     </header>
@@ -364,40 +368,28 @@
     <!-- Login: same secret as server ADMIN_SECRET; sent as X-Admin-Token after sign-in -->
     <div id="loginScreen" class="login-wrap">
       <div class="login-card">
-        <h1>Short link admin</h1>
-        <p class="sub">Sign in with the admin password configured on the server (<code>ADMIN_SECRET</code>). It is never shown on this page after login.</p>
+        <h1>Admin sign-in</h1>
+        <p class="sub">Password matches server <code>ADMIN_SECRET</code>.</p>
         <label for="loginPassword">Password</label>
         <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Admin password" />
         <div class="login-actions">
           <label class="remember">
             <input type="checkbox" id="rememberMe" />
-            <span>Keep me signed in on this browser</span>
+            <span>Remember me</span>
           </label>
           <button type="button" class="primary" id="loginBtn">Sign in</button>
         </div>
         <div id="loginMsg" class="msg" aria-live="polite"></div>
-        <div class="login-footer">
-          Token is sent as <code>X-Admin-Token</code> on each API request.
-        </div>
       </div>
     </div>
 
     <div id="adminDashboard" class="hidden">
       <div class="shell-inner">
-      <div class="topbar">
-        <h1>Short links</h1>
-        <div class="topbar-actions">
-          <button type="button" class="btn" id="logoutBtn">Sign out</button>
-        </div>
-      </div>
-      <p class="hint">
-        Only short links you saved with <strong>Save to admin</strong> on the generator appear here (with photo QR preview). Hit count and last scan are shown in the table; use <strong>Edit</strong> to change the destination without reprinting the QR.
-        Set <code>PUBLIC_BASE_URL</code> in server <code>.env</code> for correct links.
-      </p>
+      <p class="hint"><code>PUBLIC_BASE_URL</code> in <code>.env</code> for correct short-link URLs.</p>
 
       <div class="card">
         <div class="card-toolbar">
-          <button type="button" class="btn btn-primary" id="reloadBtn">Reload list</button>
+          <button type="button" class="btn btn-primary" id="reloadBtn">Reload</button>
         </div>
         <div id="listMsg" class="msg"></div>
         <div class="table-scroll">
@@ -457,7 +449,8 @@
     const rememberMe = document.getElementById("rememberMe");
     const loginBtn = document.getElementById("loginBtn");
     const loginMsg = document.getElementById("loginMsg");
-    const logoutBtn = document.getElementById("logoutBtn");
+    const headerNavAdmin = document.getElementById("headerNavAdmin");
+    const headerSignOut = document.getElementById("headerSignOut");
     const listMsg = document.getElementById("listMsg");
     const tbody = document.getElementById("tbody");
     const reloadBtn = document.getElementById("reloadBtn");
@@ -503,11 +496,15 @@
       loginScreen.classList.remove("hidden");
       adminDashboard.classList.add("hidden");
       loginPassword.value = "";
+      if (headerNavAdmin) headerNavAdmin.classList.remove("hidden");
+      if (headerSignOut) headerSignOut.classList.add("hidden");
     }
 
     function showDashboard() {
       loginScreen.classList.add("hidden");
       adminDashboard.classList.remove("hidden");
+      if (headerNavAdmin) headerNavAdmin.classList.add("hidden");
+      if (headerSignOut) headerSignOut.classList.remove("hidden");
     }
 
     async function api(path, opts) {
@@ -547,18 +544,14 @@
       } catch (_) {
         clearSession();
         showLogin();
-        setMsg(
-          loginMsg,
-          "Saved token does not match this server — sign in again (e.g. after changing ADMIN_SECRET in .env).",
-          false,
-        );
+        setMsg(loginMsg, "Sign in again (invalid or outdated token).", false);
       }
     }
 
     loginBtn.addEventListener("click", async () => {
       const pwd = loginPassword.value.trim();
       if (!pwd) {
-        setMsg(loginMsg, "Enter the admin password.", false);
+        setMsg(loginMsg, "Enter password.", false);
         return;
       }
       loginBtn.disabled = true;
@@ -591,12 +584,14 @@
       if (e.key === "Enter") loginBtn.click();
     });
 
-    logoutBtn.addEventListener("click", () => {
-      clearSession();
-      tbody.innerHTML = "";
-      showLogin();
-      setMsg(loginMsg, "Signed out.", true);
-    });
+    if (headerSignOut) {
+      headerSignOut.addEventListener("click", () => {
+        clearSession();
+        tbody.innerHTML = "";
+        showLogin();
+        setMsg(loginMsg, "Signed out", true);
+      });
+    }
 
     function fmtTs(ts) {
       if (ts == null || ts === "") return "—";
@@ -776,7 +771,7 @@
           if (!links.length) {
             setMsg(
               listMsg,
-              "No managed short links yet — on the generator use short link + “Save to admin”, then generate.",
+              "No links yet. Generator: Short link + Save — Manage in Admin, then Generate.",
               null,
             );
             return;
@@ -793,7 +788,7 @@
             showLogin();
             setMsg(
             loginMsg,
-            "Saved token does not match this server — sign in again if ADMIN_SECRET changed.",
+            "Sign in again (invalid or outdated token).",
             false,
           );
             return;

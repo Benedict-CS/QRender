@@ -14,7 +14,6 @@ from pydantic import BaseModel, Field
 
 from app import short_redirect
 from app.qr_art import FitMode, build_art_qr_photo_microdot
-from app.qr_validate import validate_qr_code
 
 app = FastAPI(title="QRender API", version="0.1.0")
 
@@ -53,35 +52,32 @@ def _hex_to_rgb(value: str) -> tuple[int, int, int]:
 
 
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
+_DEFAULT_GITHUB_REPO_URL = "https://github.com/Benedict-CS/QRender"
 
 
 def _index_html() -> str:
     template = (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
-    repo = (os.environ.get("PUBLIC_GITHUB_URL") or "").strip()
-    if repo:
-        safe = html.escape(repo)
-        badge = (
-            f'<a class="nav-link" href="{safe}" target="_blank" rel="noopener noreferrer">'
-            "GitHub</a>"
-        )
-        gh_icon = (
-            f'<a class="github-icon-link footer-github" href="{safe}" '
-            'target="_blank" rel="noopener noreferrer" title="QRender on GitHub">'
-            '<span class="sr-only">QRender on GitHub</span>'
-            '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" '
-            'viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
-            '<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 '
-            "0-.285-.015-1.23-.015-2.235-3.015.555-3.795-1.455-3.795-1.455-.51-1.305-1.245-1.65-1.245-1.65"
-            "-1.005-.69.075-.675.075-.675 1.11.075 1.695 1.14 1.695 1.14 1.005 1.725 2.64 1.23 3.285.93.105-.735"
-            ".39-1.23.705-1.515-2.4-.27-4.935-1.215-4.935-5.43 0-1.2.42-2.19 1.125-2.955-.12-.27-.495-1.365"
-            ".105-2.85 0 0 .915-.285 3.005 1.125.87-.24 1.815-.36 2.745-.36s1.875.12 2.745.36c2.085-1.41 "
-            "3-1.125 3-1.125.6 1.485.225 2.58.12 2.85.705.765 1.125 1.755 1.125 2.955 0 4.23-2.535 5.16-4.95 "
-            "5.43.39.33.75.96.75 1.935 0 1.395-.015 2.52-.015 2.865 0 .315.225.69.825.57A12.02 12.02 0 0024 12"
-            'c0-6.63-5.37-12-12-12z"/></svg></a>'
-        )
-    else:
-        badge = ""
-        gh_icon = ""
+    repo = (os.environ.get("PUBLIC_GITHUB_URL") or "").strip() or _DEFAULT_GITHUB_REPO_URL
+    safe = html.escape(repo)
+    badge = (
+        f'<a class="nav-link" href="{safe}" target="_blank" rel="noopener noreferrer">'
+        "GitHub</a>"
+    )
+    gh_icon = (
+        f'<a class="github-icon-link footer-github" href="{safe}" '
+        'target="_blank" rel="noopener noreferrer" title="QRender on GitHub">'
+        '<span class="sr-only">QRender on GitHub</span>'
+        '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" '
+        'viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
+        '<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 '
+        "0-.285-.015-1.23-.015-2.235-3.015.555-3.795-1.455-3.795-1.455-.51-1.305-1.245-1.65-1.245-1.65"
+        "-1.005-.69.075-.675.075-.675 1.11.075 1.695 1.14 1.695 1.14 1.005 1.725 2.64 1.23 3.285.93.105-.735"
+        ".39-1.23.705-1.515-2.4-.27-4.935-1.215-4.935-5.43 0-1.2.42-2.19 1.125-2.955-.12-.27-.495-1.365"
+        ".105-2.85 0 0 .915-.285 3.005 1.125.87-.24 1.815-.36 2.745-.36s1.875.12 2.745.36c2.085-1.41 "
+        "3-1.125 3-1.125.6 1.485.225 2.58.12 2.85.705.765 1.125 1.755 1.125 2.955 0 4.23-2.535 5.16-4.95 "
+        "5.43.39.33.75.96.75 1.935 0 1.395-.015 2.52-.015 2.865 0 .315.225.69.825.57A12.02 12.02 0 0024 12"
+        'c0-6.63-5.37-12-12-12z"/></svg></a>'
+    )
     return template.replace("{{GITHUB_LINK}}", badge).replace("{{GITHUB_FOOTER_ICON}}", gh_icon)
 
 
@@ -164,13 +160,13 @@ def api_admin_link_art_png(
     if managed is False:
         raise HTTPException(
             status_code=404,
-            detail="This short link was not added to admin — enable “Save to admin” when generating.",
+            detail="This short link was not added to admin — enable Save — Manage in Admin when generating.",
         )
     path = short_redirect.art_preview_path(code)
     if not path.is_file():
         raise HTTPException(
             status_code=404,
-            detail="No saved art QR yet — enable short link + Save to admin on the generator, then generate.",
+            detail="No saved art QR yet — enable Short link + Save — Manage in Admin on the generator, then generate.",
         )
     return FileResponse(path, media_type="image/png")
 
@@ -262,8 +258,8 @@ async def qr_art(
         raise HTTPException(status_code=400, detail="crop_anchor_y must be between 0 and 1")
     if fit_mode not in ("cover", "contain"):
         raise HTTPException(status_code=400, detail="fit_mode must be cover or contain")
-    if not (0.5 <= cover_zoom <= 3.0):
-        raise HTTPException(status_code=400, detail="cover_zoom must be between 0.5 and 3")
+    if not (0.25 <= cover_zoom <= 3.0):
+        raise HTTPException(status_code=400, detail="cover_zoom must be between 0.25 and 3")
     if not (0.08 <= micro_dot_radius_frac <= 0.35):
         raise HTTPException(
             status_code=400,
@@ -330,8 +326,6 @@ async def qr_art(
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err)) from err
 
-    decode_ok = validate_qr_code(output, payload, verbose=True)
-
     if use_short_url and code is not None and want_admin:
         short_redirect.set_managed(code, True)
         short_redirect.save_art_preview_png(code, output)
@@ -342,8 +336,5 @@ async def qr_art(
     return StreamingResponse(
         buffer,
         media_type="image/png",
-        headers={
-            "X-QR-Encoded-Content": payload[:512],
-            "X-QR-Decode-Ok": "true" if decode_ok else "false",
-        },
+        headers={"X-QR-Encoded-Content": payload[:512]},
     )
