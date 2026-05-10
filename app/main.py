@@ -12,7 +12,7 @@ from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response, StreamingResponse
 from pydantic import BaseModel, Field
 
-from app import short_redirect
+from app import gallery_winlab, short_redirect
 from app.qr_art import FitMode, build_art_qr_photo_microdot
 
 app = FastAPI(title="QRender API", version="0.1.0")
@@ -115,6 +115,19 @@ def _admin_short_link_qr_png(payload: str) -> bytes:
     buf = BytesIO()
     img.save(buf, format="PNG")
     return buf.getvalue()
+
+
+@app.get("/r/winlab-random")
+def redirect_random_winlab_gallery_image() -> RedirectResponse:
+    """
+    302 redirect to a random still image from the WinLab public gallery (videos skipped).
+    Encode this URL in a QR code for a different photo on each scan.
+    """
+    try:
+        target = gallery_winlab.random_still_image_url()
+    except RuntimeError as err:
+        raise HTTPException(status_code=502, detail=str(err)) from err
+    return RedirectResponse(target, status_code=302)
 
 
 @app.get("/s/{code}")
