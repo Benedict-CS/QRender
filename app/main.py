@@ -336,7 +336,6 @@ async def qr_art(
             finder_dark_rgb=finder_dark_rgb,
             finder_light_rgb=finder_light_rgb,
             photo_wash=photo_wash,
-            finder_decor=False,
             prepixelate_max=0,
             crop_anchor_x=crop_anchor_x,
             crop_anchor_y=crop_anchor_y,
