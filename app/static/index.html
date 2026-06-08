@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>QRender</title>
   <link rel="icon" href="/static/logo.png" type="image/png" />
+  <link rel="manifest" href="/static/manifest.json" />
+  <meta name="theme-color" content="#5b8cff" />
   <style>
     :root {
       --bg: #0c0f14;
@@ -1330,6 +1332,15 @@
     syncSaveToAdminEnabled();
     syncShortUrlCopyUi();
     syncGenerateEnabled();
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js').catch(err => {
+          console.error('SW registration failed:', err);
+        });
+      });
+    }
   </script>
 </body>
 </html>

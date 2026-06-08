@@ -1,0 +1,17 @@
+{
+  "name": "QRender - Art QR Generator",
+  "short_name": "QRender",
+  "description": "Generate photo micro-dot style art QR codes with short-link support.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0c0f14",
+  "theme_color": "#5b8cff",
+  "icons": [
+    {
+      "src": "/static/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
