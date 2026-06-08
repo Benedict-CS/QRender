@@ -124,33 +124,6 @@
       flex: 1;
       padding: 20px 0 36px;
     }
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-    .github-icon-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      text-decoration: none;
-      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-    }
-    .github-icon-link:hover {
-      border-color: var(--muted);
-      color: var(--accent);
-    }
     .hidden { display: none !important; }
 
     /* Toast Notification */
@@ -169,9 +142,6 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       z-index: 2000;
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      display: flex;
-      align-items: center;
-      gap: 10px;
     }
     #toast.show { transform: translateX(-50%) translateY(0); }
     #toast.err { border-color: var(--err); }
@@ -323,7 +293,6 @@
       border-color: transparent;
       cursor: default;
     }
-    code { background: var(--surface2); padding: 2px 7px; border-radius: 6px; font-size: 0.85em; }
     .stats { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
 
     .qr-cell { width: 100px; }
@@ -384,7 +353,7 @@
             <div class="card-toolbar">
               <div class="search-input-wrap">
                 <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search codes or destinations..." />
+                <input type="text" id="searchInput" class="search-input" placeholder="Search destinations..." />
               </div>
               <button type="button" class="btn btn-primary" id="reloadBtn">Reload</button>
               <button type="button" class="btn" id="exportBtn">Export CSV</button>
@@ -393,8 +362,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>QR</th>
-                    <th>Code</th>
+                    <th>QR Preview</th>
                     <th>Destination</th>
                     <th>Hits</th>
                     <th>Last scan</th>
@@ -429,6 +397,7 @@
     const toast = document.getElementById("toast");
 
     let allLinks = [];
+    let publicBaseUrl = "";
 
     function showToast(msg, type = 'ok') {
       toast.textContent = msg;
@@ -473,9 +442,8 @@
       if (!pwd) return showToast("Enter password", "err");
       loginBtn.disabled = true;
       try {
-        await fetch("/api/admin/config", { headers: { "X-Admin-Token": pwd } }).then(r => {
-          if (!r.ok) throw new Error("Invalid password");
-        });
+        const cfg = await api("/api/admin/config", { headers: { "X-Admin-Token": pwd } });
+        publicBaseUrl = cfg.public_base_url || "";
         if (rememberMe.checked) localStorage.setItem(STORAGE_PERSIST, pwd);
         else sessionStorage.setItem(STORAGE_SESSION, pwd);
         showDashboard();
@@ -496,15 +464,19 @@
 
     function renderTable(links) {
       tbody.innerHTML = "";
+      const tok = getToken();
       links.forEach(l => {
         const tr = document.createElement("tr");
+        const qrUrl = `/api/admin/links/${l.code}/art.png`;
+        const shortUrl = `${publicBaseUrl}/s/${l.code}`;
+        
         tr.innerHTML = `
-          <td class="qr-cell"><img class="qr-preview-img" data-code="${l.code}" alt="QR" src="/api/admin/links/${l.code}/art.png?t=${Date.now()}"></td>
-          <td><code>${l.code}</code></td>
-          <td><input type="text" class="edit-target" value="${l.target}" readOnly data-code="${l.code}" data-orig="${l.target}"></td>
+          <td class="qr-cell"><img class="qr-preview-img" alt="QR" src="${qrUrl}" onerror="this.src='/api/admin/links/${l.code}/qr.png'"></td>
+          <td><input type="text" class="edit-target" value="${l.target}" readOnly data-code="${l.code}"></td>
           <td class="stats">${l.hit_count || 0}</td>
           <td class="stats">${l.last_hit_at ? new Date(l.last_hit_at * 1000).toLocaleString() : '—'}</td>
           <td class="actions-cell">
+            <button class="btn btn-mini copy-btn">Copy URL</button>
             <button class="btn btn-mini edit-btn">Edit</button>
             <button class="btn btn-mini save-btn hidden btn-primary">Save</button>
             <button class="btn btn-mini del-btn">Del</button>
@@ -541,10 +513,13 @@
     tbody.addEventListener("click", async (e) => {
       const tr = e.target.closest("tr");
       if (!tr) return;
-      const code = tr.querySelector("code").textContent;
       const inp = tr.querySelector(".edit-target");
+      const code = inp.dataset.code;
 
-      if (e.target.classList.contains("edit-btn")) {
+      if (e.target.classList.contains("copy-btn")) {
+        const shortUrl = `${publicBaseUrl}/s/${code}`;
+        navigator.clipboard.writeText(shortUrl).then(() => showToast("Short URL copied!"));
+      } else if (e.target.classList.contains("edit-btn")) {
         inp.readOnly = false;
         inp.focus();
         e.target.classList.add("hidden");
@@ -572,7 +547,13 @@
     reloadBtn.addEventListener("click", loadList);
     loginPassword.addEventListener("keydown", e => e.key === "Enter" && loginBtn.click());
 
-    if (getToken()) { showDashboard(); loadList(); } else showLogin();
+    if (getToken()) { 
+      showDashboard(); 
+      api("/api/admin/config").then(cfg => {
+        publicBaseUrl = cfg.public_base_url || "";
+        loadList();
+      });
+    } else showLogin();
   </script>
 </body>
 </html>

@@ -897,26 +897,26 @@
     }
 
     // Modal & Template Logic
-    function openModal() { examplesModal.classList.add("is-open"); }
+    function openModal() {
+      // Sync checkbox state with localStorage whenever modal opens
+      neverShowAgainCheckbox.checked = localStorage.getItem("qrender_hide_examples") === "true";
+      examplesModal.classList.add("is-open");
+    }
     function closeModal() {
       examplesModal.classList.remove("is-open");
-      if (neverShowAgainCheckbox.checked) localStorage.setItem("qrender_hide_examples", "true");
+      if (neverShowAgainCheckbox.checked) {
+        localStorage.setItem("qrender_hide_examples", "true");
+      } else {
+        localStorage.removeItem("qrender_hide_examples");
+      }
     }
 
-    document.querySelectorAll(".example-item").forEach(item => {
-      item.addEventListener("click", () => {
-        microDotRadiusPctEl.value = item.dataset.dots;
-        finderShapeEl.value = item.dataset.finder;
-        finderDarkColorEl.value = item.dataset.dark;
-        finderLightColorEl.value = item.dataset.light;
-        syncDotSizeLabel();
-        closeModal();
-        showToast("Template applied!");
-      });
-    });
-
+    // Examples are just for show now, no template logic
     document.getElementById("showExamplesBtn").addEventListener("click", openModal);
     document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+    examplesModal.addEventListener("click", (e) => {
+      if (e.target === examplesModal) closeModal();
+    });
     
     useShortUrlEl.addEventListener("change", () => {
       saveToAdminEl.disabled = !useShortUrlEl.checked;
