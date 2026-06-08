@@ -262,6 +262,7 @@ async def qr_art(
     finder_shape: str = Form("square"),
     finder_dark_color: str = Form("#000000"),
     finder_light_color: str = Form("#FFFFFF"),
+    photo_wash: float = Form(0.0),
     use_short_url: int = Form(0),
     save_to_admin: int = Form(0),
 ) -> StreamingResponse:
@@ -334,6 +335,7 @@ async def qr_art(
             finder_shape=finder_shape,  # validated: square | circle
             finder_dark_rgb=finder_dark_rgb,
             finder_light_rgb=finder_light_rgb,
+            photo_wash=photo_wash,
             finder_decor=False,
             prepixelate_max=0,
             crop_anchor_x=crop_anchor_x,
