@@ -252,10 +252,6 @@
       transition: all 0.2s ease;
       position: relative;
     }
-    .example-item:hover {
-      transform: scale(1.02);
-      border-color: var(--accent);
-    }
     .example-item img {
       width: 100%;
       display: block;
@@ -568,6 +564,18 @@
       to { transform: rotate(360deg); }
     }
     .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .toggle input { width: auto; accent-color: var(--accent); }
+    .toggle span { font-size: 0.88rem; color: #dbe4f5; }
     button.primary {
       flex: 1;
       min-width: 140px;
@@ -632,6 +640,7 @@
       align-items: center;
     }
     .history-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -722,6 +731,11 @@
               <p class="muted">Increase for better scannability on dark photos.</p>
             </div>
 
+            <div class="toggle">
+              <input type="checkbox" id="livePreview" checked />
+              <span>Live preview</span>
+            </div>
+
             <div class="publish-before-generate">
               <div class="toggle">
                 <input type="checkbox" id="save_to_admin" disabled />
@@ -732,6 +746,7 @@
             <div class="actions">
               <button type="button" class="primary" id="generateBtn">Generate</button>
               <button type="button" class="ghost" id="downloadBtn" disabled>Download PNG</button>
+              <button type="button" class="ghost hidden" id="shareBtn">Share</button>
               <button type="button" class="ghost" id="resetBtn">Reset</button>
             </div>
             <div id="error" class="error"></div>
@@ -761,13 +776,13 @@
       <button type="button" class="modal-close" id="closeModalBtn">&times;</button>
       <h3 class="modal-title">Micro-dot Style Examples</h3>
       <div class="examples-grid">
-        <div class="example-item" data-dots="18" data-finder="circle" data-dark="#220033" data-light="#ffffff">
+        <div class="example-item">
           <img src="/static/images/demo_microdot_1.png" alt="Ex 1" />
         </div>
-        <div class="example-item" data-dots="25" data-finder="square" data-dark="#000000" data-light="#eeeeee">
+        <div class="example-item">
           <img src="/static/images/demo_microdot_2.png" alt="Ex 2" />
         </div>
-        <div class="example-item" data-dots="15" data-finder="circle" data-dark="#112244" data-light="#ffffff">
+        <div class="example-item">
           <img src="/static/images/demo_microdot_3.png" alt="Ex 3" />
         </div>
       </div>
@@ -794,9 +809,11 @@
     const finderShapeEl = document.getElementById("finder_shape");
     const finderDarkColorEl = document.getElementById("finder_dark_color");
     const finderLightColorEl = document.getElementById("finder_light_color");
+    const photoWashEl = document.getElementById("photo_wash");
     const generateBtn = document.getElementById("generateBtn");
     const downloadBtn = document.getElementById("downloadBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const shareBtn = document.getElementById("shareBtn");
     const previewEl = document.getElementById("preview");
     const errorEl = document.getElementById("error");
     const statusEl = document.getElementById("status");
@@ -805,16 +822,30 @@
     const historyList = document.getElementById("historyList");
     const examplesModal = document.getElementById("examplesModal");
     const neverShowAgainCheckbox = document.getElementById("neverShowAgain");
+    const cropAnchorXEl = document.getElementById("crop_anchor_x");
+    const cropAnchorYEl = document.getElementById("crop_anchor_y");
+    const framingEditorWrap = document.getElementById("framingEditorWrap");
+    const cropFrame = document.getElementById("cropFrame");
+    const cropImg = document.getElementById("cropImg");
+    const coverZoomEl = document.getElementById("cover_zoom");
+    const livePreviewEl = document.getElementById("livePreview");
 
     let currentBlobUrl = null;
+    let currentBlob = null;
+    let debounceTimer = null;
+    let inFlight = false;
     let cropImgUrl = null;
     const cropState = { iw: 0, ih: 0, ox: 0, oy: 0, zoom: 1, cw: 280, W: 0, H: 0 };
+    let framingDrag = null;
 
     function showToast(msg, type = 'ok') {
       toast.textContent = msg;
       toast.className = 'show ' + type;
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function clamp01(v) { return clamp(v, 0, 1); }
 
     function syncDotSizeLabel() { dotSizeLabel.textContent = microDotRadiusPctEl.value + "%"; }
 
@@ -840,73 +871,170 @@
       `).join("");
     }
 
-    async function generateNow() {
+    function clampPan() {
+      const cw = cropState.cw, W = cropState.W, H = cropState.H;
+      if (W >= cw) cropState.ox = Math.min(0, Math.max(cw - W, cropState.ox));
+      else cropState.ox = Math.min(cw - W, Math.max(0, cropState.ox));
+      if (H >= cw) cropState.oy = Math.min(0, Math.max(cw - H, cropState.oy));
+      else cropState.oy = Math.min(cw - H, Math.max(0, cropState.oy));
+    }
+
+    function syncAnchorsFromFraming() {
+      const cw = cropState.cw, W = cropState.W, H = cropState.H, ox = cropState.ox, oy = cropState.oy;
+      let ax, ay;
+      if (W >= cw) { const lx = Math.max(0, W - cw); ax = lx > 1e-6 ? (-ox) / lx : 0.5; }
+      else { const lx = Math.max(0, cw - W); ax = lx > 1e-6 ? ox / lx : 0.5; }
+      if (H >= cw) { const ly = Math.max(0, H - cw); ay = ly > 1e-6 ? (-oy) / ly : 0.5; }
+      else { const ly = Math.max(0, cw - H); ay = ly > 1e-6 ? oy / ly : 0.5; }
+      cropAnchorXEl.value = String(Math.round(clamp01(ax) * 100));
+      cropAnchorYEl.value = String(Math.round(clamp01(ay) * 100));
+    }
+
+    function layoutFramingEditor(resetCenter) {
+      if (!cropState.iw || !cropState.ih) return;
+      const cw = cropFrame.clientWidth || 280;
+      const cw0 = cropState.cw, W0 = cropState.W, H0 = cropState.H, ox0 = cropState.ox, oy0 = cropState.oy;
+      cropState.zoom = Number(coverZoomEl.value) / 100;
+      const S = Math.max(cw / cropState.iw, cw / cropState.ih) * cropState.zoom;
+      const W = cropState.iw * S, H = cropState.ih * S;
+      cropState.cw = cw; cropState.W = W; cropState.H = H;
+      
+      if (resetCenter) {
+        cropState.ox = (cw - W) / 2; cropState.oy = (cw - H) / 2;
+      } else if (W0 > 1e-6 && H0 > 1e-6 && cw0 > 0) {
+        const u = (cw0 / 2 - ox0) / W0, v = (cw0 / 2 - oy0) / H0;
+        cropState.ox = cw / 2 - u * W; cropState.oy = cw / 2 - v * H;
+      } else {
+        cropState.ox = (cw - W) / 2; cropState.oy = (cw - H) / 2;
+      }
+      clampPan();
+      cropImg.style.width = W + "px"; cropImg.style.height = H + "px";
+      cropImg.style.left = cropState.ox + "px"; cropImg.style.top = cropState.oy + "px";
+      syncAnchorsFromFraming();
+    }
+
+    function initFramingFromImage() {
+      const file = imageEl.files && imageEl.files[0];
+      if (!file) {
+        framingEditorWrap.classList.add("hidden");
+        cropState.iw = 0; cropState.ih = 0;
+        return;
+      }
+      framingEditorWrap.classList.remove("hidden");
+      if (cropImgUrl) URL.revokeObjectURL(cropImgUrl);
+      cropImgUrl = URL.createObjectURL(file);
+      cropImg.src = cropImgUrl;
+      const im = new Image();
+      im.onload = () => {
+        cropState.iw = im.naturalWidth; cropState.ih = im.naturalHeight;
+        requestAnimationFrame(() => layoutFramingEditor(true));
+      };
+      im.src = cropImgUrl;
+    }
+
+    new ResizeObserver(() => { if (cropState.iw) layoutFramingEditor(false); }).observe(cropFrame);
+
+    async function generateNow(reason) {
       errorEl.textContent = "";
-      if (!imageEl.files[0] || !contentEl.value.trim()) return showToast("Image and content required", "err");
+      if (!imageEl.files[0] || !contentEl.value.trim()) {
+        if (reason === "manual") showToast("Image and link required", "err");
+        return;
+      }
       
       previewEl.innerHTML = '<div class="preview-loading"><div class="preview-spinner"></div><span>Rendering...</span></div>';
       generateBtn.disabled = true;
+      downloadBtn.disabled = true;
+      shareBtn.classList.add("hidden");
       
       try {
         const form = new FormData();
         form.append("content", contentEl.value);
+        form.append("box_size", "12");
+        form.append("border", "2");
+        form.append("crop_anchor_x", (Number(cropAnchorXEl.value) / 100).toFixed(4));
+        form.append("crop_anchor_y", (Number(cropAnchorYEl.value) / 100).toFixed(4));
+        form.append("fit_mode", "cover");
+        form.append("cover_zoom", (Number(coverZoomEl.value) / 100).toFixed(2));
         form.append("micro_dot_radius_frac", (microDotRadiusPctEl.value / 100).toFixed(2));
         form.append("finder_shape", finderShapeEl.value);
         form.append("finder_dark_color", finderDarkColorEl.value);
         form.append("finder_light_color", finderLightColorEl.value);
+        form.append("photo_wash", photoWashEl.value);
         form.append("use_short_url", useShortUrlEl.checked ? "1" : "0");
         form.append("save_to_admin", saveToAdminEl.checked ? "1" : "0");
         form.append("image", imageEl.files[0]);
 
         const resp = await fetch("/qr/art", { method: "POST", body: form });
-        if (!resp.ok) throw new Error("Generation failed");
+        if (!resp.ok) {
+          const payload = await resp.json().catch(() => ({}));
+          throw new Error(payload.detail || ("HTTP " + resp.status));
+        }
         
         const enc = resp.headers.get("X-QR-Encoded-Content");
-        if (enc) {
+        if (useShortUrlEl.checked && enc) {
           shortUrlDisplay.value = enc.trim();
           updateHistory(enc.trim());
           copyShortUrlBtn.disabled = false;
+        } else {
+          shortUrlDisplay.value = "";
+          copyShortUrlBtn.disabled = true;
         }
 
         const blob = await resp.blob();
+        currentBlob = blob;
         if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
         currentBlobUrl = URL.createObjectURL(blob);
         previewEl.innerHTML = `<img src="${currentBlobUrl}" alt="QR">`;
         downloadBtn.disabled = false;
-        showToast("QR Generated!");
+        
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'qr.png', {type: 'image/png'})] })) {
+          shareBtn.classList.remove("hidden");
+        }
+
+        statusEl.textContent = (livePreviewEl.checked ? "Live: " : "") + (reason || "OK");
+        statusEl.className = "status live";
+        if (reason === "manual") showToast("QR Generated!");
       } catch (e) {
         errorEl.textContent = e.message;
-        showToast(e.message, "err");
+        previewEl.innerHTML = '<div class="preview-placeholder">Failed to render</div>';
+        statusEl.textContent = "";
+        statusEl.className = "status";
+        if (reason === "manual") showToast(e.message, "err");
       } finally {
         generateBtn.disabled = false;
       }
     }
 
-    // Modal & Template Logic
+    function scheduleGenerate(reason) {
+      if (!livePreviewEl.checked && reason !== "manual") return;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (inFlight) return;
+        inFlight = true;
+        generateNow(reason).finally(() => { inFlight = false; });
+      }, reason === "manual" ? 0 : 420);
+    }
+
+    // Modal Logic
     function openModal() {
-      // Sync checkbox state with localStorage whenever modal opens
       neverShowAgainCheckbox.checked = localStorage.getItem("qrender_hide_examples") === "true";
       examplesModal.classList.add("is-open");
     }
     function closeModal() {
       examplesModal.classList.remove("is-open");
-      if (neverShowAgainCheckbox.checked) {
-        localStorage.setItem("qrender_hide_examples", "true");
-      } else {
-        localStorage.removeItem("qrender_hide_examples");
-      }
+      if (neverShowAgainCheckbox.checked) localStorage.setItem("qrender_hide_examples", "true");
+      else localStorage.removeItem("qrender_hide_examples");
     }
 
-    // Examples are just for show now, no template logic
     document.getElementById("showExamplesBtn").addEventListener("click", openModal);
     document.getElementById("closeModalBtn").addEventListener("click", closeModal);
-    examplesModal.addEventListener("click", (e) => {
-      if (e.target === examplesModal) closeModal();
-    });
-    
+    examplesModal.addEventListener("click", (e) => { if (e.target === examplesModal) closeModal(); });
+
+    // Event Listeners for UI
     useShortUrlEl.addEventListener("change", () => {
       saveToAdminEl.disabled = !useShortUrlEl.checked;
       if (!useShortUrlEl.checked) saveToAdminEl.checked = false;
+      scheduleGenerate("short");
     });
 
     copyShortUrlBtn.addEventListener("click", () => {
@@ -916,22 +1044,85 @@
     downloadBtn.addEventListener("click", () => {
       const a = document.createElement("a");
       a.href = currentBlobUrl;
-      a.download = "qrender.png";
+      a.download = "qrender-art.png";
       a.click();
     });
 
-    resetBtn.addEventListener("click", () => location.reload());
-    imageEl.addEventListener("change", () => {
-      document.getElementById("imageFileStatus").textContent = imageEl.files[0]?.name || "No file";
-      generateBtn.disabled = false;
+    shareBtn.addEventListener("click", async () => {
+      if (!currentBlob) return;
+      try {
+        const file = new File([currentBlob], 'qrender-art.png', { type: 'image/png' });
+        await navigator.share({ title: 'My QRender Art', files: [file] });
+      } catch (err) {
+        console.error("Share failed", err);
+      }
     });
 
-    microDotRadiusPctEl.addEventListener("input", syncDotSizeLabel);
+    resetBtn.addEventListener("click", () => location.reload());
+    
+    imageEl.addEventListener("change", () => {
+      document.getElementById("imageFileStatus").textContent = imageEl.files[0]?.name || "No file";
+      initFramingFromImage();
+      generateBtn.disabled = false;
+      scheduleGenerate("image");
+    });
+
+    // Event listeners for Live Preview triggers
+    microDotRadiusPctEl.addEventListener("input", () => { syncDotSizeLabel(); scheduleGenerate("dots"); });
+    coverZoomEl.addEventListener("input", () => { layoutFramingEditor(false); scheduleGenerate("zoom"); });
+    
+    ["input", "change"].forEach((evt) => {
+      contentEl.addEventListener(evt, () => scheduleGenerate("content"));
+      finderShapeEl.addEventListener(evt, () => scheduleGenerate("finder"));
+      finderDarkColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
+      finderLightColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
+      photoWashEl.addEventListener(evt, () => scheduleGenerate("wash"));
+    });
+
+    livePreviewEl.addEventListener("change", () => {
+      if (livePreviewEl.checked) scheduleGenerate("live on");
+    });
+
+    generateBtn.addEventListener("click", () => generateNow("manual"));
+
+    // Pan/Zoom Dragging
+    cropFrame.addEventListener("pointerdown", (e) => {
+      framingDrag = { px: e.clientX, py: e.clientY, ox: cropState.ox, oy: cropState.oy };
+      cropFrame.setPointerCapture(e.pointerId);
+    });
+    cropFrame.addEventListener("pointermove", (e) => {
+      if (!framingDrag) return;
+      cropState.ox = framingDrag.ox + (e.clientX - framingDrag.px);
+      cropState.oy = framingDrag.oy + (e.clientY - framingDrag.py);
+      clampPan();
+      cropImg.style.left = cropState.ox + "px";
+      cropImg.style.top = cropState.oy + "px";
+      syncAnchorsFromFraming();
+      scheduleGenerate("framing");
+    });
+    cropFrame.addEventListener("pointerup", () => { framingDrag = null; });
+    cropFrame.addEventListener("pointercancel", () => { framingDrag = null; });
+    cropFrame.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const z = Number(coverZoomEl.value);
+      coverZoomEl.value = String(clamp(z + (e.deltaY > 0 ? -5 : 5), 25, 300));
+      layoutFramingEditor(false);
+      scheduleGenerate("zoom");
+    }, { passive: false });
 
     window.addEventListener("DOMContentLoaded", () => {
       renderHistory();
       if (localStorage.getItem("qrender_hide_examples") !== "true") setTimeout(openModal, 600);
     });
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/static/sw.js').catch(err => {
+          console.error('SW registration failed:', err);
+        });
+      });
+    }
   </script>
 </body>
 </html>
