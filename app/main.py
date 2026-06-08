@@ -1,5 +1,8 @@
 import html
 import os
+import secrets
+from contextlib import asynccontextmanager
+from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from typing import Annotated, cast
@@ -16,7 +19,16 @@ from pydantic import BaseModel, Field
 from app import gallery_winlab, short_redirect
 from app.qr_art import FitMode, build_art_qr_photo_microdot
 
-app = FastAPI(title="QRender API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Startup: init database
+    short_redirect.init_db()
+    yield
+    # Shutdown logic (if any) could go here
+
+
+app = FastAPI(title="QRender API", version="0.1.0", lifespan=lifespan)
 
 
 def require_admin(
@@ -32,17 +44,12 @@ def require_admin(
     token = (x_admin_token or "").strip()
     if not token and authorization and authorization.lower().startswith("bearer "):
         token = authorization[7:].strip()
-    if not token or token != secret:
+    if not token or not secrets.compare_digest(token, secret):
         raise HTTPException(status_code=403, detail="Invalid admin token")
 
 
 class ShortLinkUpdateBody(BaseModel):
     target: str = Field(..., min_length=1, max_length=short_redirect.MAX_TARGET_LEN)
-
-
-@app.on_event("startup")
-def _startup_init_short_db() -> None:
-    short_redirect.init_db()
 
 
 def _hex_to_rgb(value: str) -> tuple[int, int, int]:
@@ -56,6 +63,7 @@ _STATIC_DIR = Path(__file__).resolve().parent / "static"
 _DEFAULT_GITHUB_REPO_URL = "https://github.com/Benedict-CS/QRender"
 
 
+@lru_cache(maxsize=1)
 def _index_html() -> str:
     template = (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
     repo = (os.environ.get("PUBLIC_GITHUB_URL") or "").strip() or _DEFAULT_GITHUB_REPO_URL
