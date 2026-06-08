@@ -468,11 +468,11 @@
       const tok = getToken();
       links.forEach(l => {
         const tr = document.createElement("tr");
-        const qrUrl = `/api/admin/links/${l.code}/art.png`;
-        const shortUrl = `${publicBaseUrl}/s/${l.code}`;
+        const qrUrl = `/api/admin/links/${l.code}/art.png?t=${encodeURIComponent(tok)}`;
+        const fallbackUrl = `/api/admin/links/${l.code}/qr.png?t=${encodeURIComponent(tok)}`;
         
         tr.innerHTML = `
-          <td class="qr-cell"><img class="qr-preview-img" alt="QR" src="${qrUrl}" onerror="this.src='/api/admin/links/${l.code}/qr.png'"></td>
+          <td class="qr-cell"><img class="qr-preview-img" alt="QR" src="${qrUrl}" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src='${fallbackUrl}'}"></td>
           <td><code>${l.code}</code></td>
           <td><input type="text" class="edit-target" value="${l.target}" readOnly data-code="${l.code}"></td>
           <td class="stats">${l.hit_count || 0}</td>

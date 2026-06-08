@@ -34,6 +34,7 @@ app = FastAPI(title="QRender API", version="0.1.0", lifespan=lifespan)
 def require_admin(
     x_admin_token: Annotated[str | None, Header(alias="X-Admin-Token")] = None,
     authorization: Annotated[str | None, Header()] = None,
+    t: str | None = None,
 ) -> None:
     secret = (os.environ.get("ADMIN_SECRET") or "").strip()
     if not secret:
@@ -44,6 +45,8 @@ def require_admin(
     token = (x_admin_token or "").strip()
     if not token and authorization and authorization.lower().startswith("bearer "):
         token = authorization[7:].strip()
+    if not token and t:
+        token = t.strip()
     if not token or not secrets.compare_digest(token, secret):
         raise HTTPException(status_code=403, detail="Invalid admin token")
 
