@@ -10,9 +10,6 @@
 
 Open-source web app for **photo micro-dot style QR codes** (art QR with a background image, corner finders, and short-link mode).
 
-## Tech Stack
-**Python** | **FastAPI** | **Uvicorn** | **Pillow** | **qrcode** | **SQLite** | **Docker**
-
 ## Showcase (Micro-dot Style Examples)
 
 | Example 1 | Example 2 | Example 3 |
