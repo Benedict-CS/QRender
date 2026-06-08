@@ -363,6 +363,7 @@
                 <thead>
                   <tr>
                     <th>QR Preview</th>
+                    <th>Code</th>
                     <th>Destination</th>
                     <th>Hits</th>
                     <th>Last scan</th>
@@ -472,6 +473,7 @@
         
         tr.innerHTML = `
           <td class="qr-cell"><img class="qr-preview-img" alt="QR" src="${qrUrl}" onerror="this.src='/api/admin/links/${l.code}/qr.png'"></td>
+          <td><code>${l.code}</code></td>
           <td><input type="text" class="edit-target" value="${l.target}" readOnly data-code="${l.code}"></td>
           <td class="stats">${l.hit_count || 0}</td>
           <td class="stats">${l.last_hit_at ? new Date(l.last_hit_at * 1000).toLocaleString() : '—'}</td>
