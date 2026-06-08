@@ -2,6 +2,12 @@
 
 Open-source web app for **photo micro-dot style QR codes** (art QR with a background image, corner finders, and short-link mode).
 
+## Showcase
+
+| Micro-dot Style | Halftone Style | Stipple Style |
+| :---: | :---: | :---: |
+| ![Microdot](images/demo_microdot.png) | ![Halftone](images/demo_halftone.png) | ![Stipple](images/demo_stipple.png) |
+
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Uvicorn](https://img.shields.io/badge/Uvicorn-0.30+-4051B5?style=for-the-badge)](https://www.uvicorn.org/)
