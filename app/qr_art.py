@@ -239,9 +239,12 @@ def build_art_qr_photo_microdot(
             
             y0, x0 = (i + bd) * bs, (j + bd) * bs
             cx, cy = x0 + bs / 2.0, y0 + bs / 2.0
-            
-            # Sample background color for smart contrast
-            br, bg, bb = fitted.getpixel((int(cx), int(cy)))
+
+            # Sample background color for smart contrast (safely clamped)
+            ix = max(0, min(fitted.width - 1, int(cx)))
+            iy = max(0, min(fitted.height - 1, int(cy)))
+            br, bg, bb = fitted.getpixel((ix, iy))
+
             rgba = _microdot_rgba(bool(matrix[i][j]), br, bg, bb, (ink_dr, ink_dg, ink_db), (ink_lr, ink_lg, ink_lb), micro_smart_contrast)
             draw.ellipse([cx - dot_rad, cy - dot_rad, cx + dot_rad, cy + dot_rad], fill=rgba)
 
