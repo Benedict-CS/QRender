@@ -250,26 +250,12 @@
       border-radius: var(--radius);
       overflow: hidden;
       transition: all 0.2s ease;
-      cursor: pointer;
       position: relative;
     }
     .example-item:hover {
       transform: scale(1.02);
       border-color: var(--accent);
     }
-    .example-item::after {
-      content: "Apply Template";
-      position: absolute;
-      inset: 0;
-      background: rgba(91, 140, 255, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    .example-item:hover::after { opacity: 1; }
     .example-item img {
       width: 100%;
       display: block;
