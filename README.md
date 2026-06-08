@@ -1,13 +1,5 @@
 # QRender
 
-Open-source web app for **photo micro-dot style QR codes** (art QR with a background image, corner finders, and short-link mode).
-
-## Showcase (Micro-dot Style Examples)
-
-| Example 1 | Example 2 | Example 3 |
-| :---: | :---: | :---: |
-| ![Microdot 1](images/demo_microdot_1.png) | ![Microdot 2](images/demo_microdot_2.png) | ![Microdot 3](images/demo_microdot_3.png) |
-
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Uvicorn](https://img.shields.io/badge/Uvicorn-0.30+-4051B5?style=for-the-badge)](https://www.uvicorn.org/)
@@ -15,6 +7,17 @@ Open-source web app for **photo micro-dot style QR codes** (art QR with a backgr
 [![qrcode](https://img.shields.io/badge/qrcode-PIL-111827?style=for-the-badge)](https://github.com/lincolnloop/python-qrcode)
 [![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+
+Open-source web app for **photo micro-dot style QR codes** (art QR with a background image, corner finders, and short-link mode).
+
+## Tech Stack
+**Python** | **FastAPI** | **Uvicorn** | **Pillow** | **qrcode** | **SQLite** | **Docker**
+
+## Showcase (Micro-dot Style Examples)
+
+| Example 1 | Example 2 | Example 3 |
+| :---: | :---: | :---: |
+| ![Microdot 1](images/demo_microdot_1.png) | ![Microdot 2](images/demo_microdot_2.png) | ![Microdot 3](images/demo_microdot_3.png) |
 
 ## Demo / UI
 
