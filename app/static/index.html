@@ -151,6 +151,27 @@
       background: rgba(255, 255, 255, 0.04);
     }
     
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 2000;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.err { border-color: var(--err); }
+    #toast.ok { border-color: var(--ok); }
+
     .layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -228,11 +249,27 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      transition: transform 0.2s ease;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
     }
     .example-item:hover {
       transform: scale(1.02);
+      border-color: var(--accent);
     }
+    .example-item::after {
+      content: "Apply Template";
+      position: absolute;
+      inset: 0;
+      background: rgba(91, 140, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .example-item:hover::after { opacity: 1; }
     .example-item img {
       width: 100%;
       display: block;
@@ -278,12 +315,6 @@
     }
     .section:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
     label { display: block; margin: 10px 0 6px; font-size: 0.82rem; color: #c7d2e5; }
-    .field-label-photo {
-      display: block;
-      margin: 10px 0 4px;
-      font-size: 0.82rem;
-      color: #c7d2e5;
-    }
     input[type="text"], input[type="number"], select {
       width: 100%;
       padding: 10px 12px;
@@ -320,9 +351,6 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-    }
-    button.finder-pick-btn svg {
-      display: block;
     }
     .file-input-hidden {
       position: absolute !important;
@@ -410,7 +438,6 @@
       outline: 2px solid var(--accent);
       outline-offset: 0;
     }
-    .crop-frame.is-picking-color:active { cursor: crosshair; }
     .crop-frame img {
       position: absolute;
       left: 0;
@@ -438,48 +465,6 @@
       border: 2px solid rgba(255, 255, 255, 0.92);
       box-sizing: border-box;
     }
-    .crop-hint {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin: 6px 0 0;
-      line-height: 1.4;
-    }
-    .zoom-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .zoom-toolbar .zoom-ico {
-      flex: 0 0 auto;
-      font-size: 0.95rem;
-      color: var(--muted);
-      user-select: none;
-      width: 1.4rem;
-      text-align: center;
-      line-height: 1;
-    }
-    .zoom-toolbar input[type="range"] {
-      flex: 1;
-      margin: 0;
-    }
-    .row2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .toggle {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .toggle input { width: auto; accent-color: var(--accent); }
-    .toggle span { font-size: 0.88rem; color: #dbe4f5; }
     .short-link-bundle {
       margin-top: 12px;
       padding: 12px;
@@ -492,8 +477,6 @@
       border-color: rgba(91, 140, 255, 0.38);
       box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.06);
     }
-    .bundle-toggle { margin-top: 0; }
-    .bundle-toggle + .bundle-toggle { margin-top: 10px; }
     .short-link-row {
       display: flex;
       align-items: center;
@@ -533,10 +516,6 @@
       font-size: 0.8rem;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
-    .short-url-field::placeholder {
-      color: var(--muted);
-      font-family: inherit;
-    }
     .short-url-copy {
       flex-shrink: 0;
       padding: 8px 12px;
@@ -566,9 +545,6 @@
       padding-top: 14px;
       border-top: 1px solid var(--border);
     }
-    .publish-before-generate .toggle {
-      margin-top: 0;
-    }
     .card-head {
       display: flex;
       flex-wrap: wrap;
@@ -584,22 +560,6 @@
       color: var(--muted);
       font-weight: 400;
     }
-    .preview-placeholder-lead {
-      margin: 0 0 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .preview-steps {
-      margin: 0;
-      padding-left: 1.15em;
-      text-align: left;
-      max-width: 280px;
-      color: var(--muted);
-      font-size: 0.84rem;
-      line-height: 1.55;
-    }
-    .preview-steps li { margin: 4px 0; }
     .preview-loading {
       display: flex;
       flex-direction: column;
@@ -672,6 +632,20 @@
       box-shadow: 0 12px 40px rgba(0,0,0,0.45);
     }
     .preview-placeholder { color: var(--muted); font-size: 0.9rem; text-align: center; padding: 24px; }
+    
+    .history-section { margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px; }
+    .history-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; }
+    .history-list { display: flex; flex-direction: column; gap: 8px; }
+    .history-item { 
+      background: var(--surface2); 
+      padding: 10px 14px; 
+      border-radius: 10px; 
+      font-size: 0.82rem; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+    }
+    .history-link { color: var(--accent); text-decoration: none; word-break: break-all; }
   </style>
 </head>
 <body>
@@ -696,13 +670,7 @@
           <div class="card">
             <div class="section">
               <label for="content">Link or text</label>
-              <input
-                id="content"
-                type="text"
-                value=""
-                placeholder="https://example.com"
-                autocomplete="url"
-              />
+              <input id="content" type="text" placeholder="https://example.com" autocomplete="url" />
               <div id="shortLinkBundle" class="short-link-bundle">
                 <div class="short-link-row">
                   <label class="short-link-check" for="use_short_url">
@@ -710,29 +678,22 @@
                     <span>Short link</span>
                   </label>
                   <div class="short-url-field-wrap">
-                    <input
-                      type="text"
-                      id="shortUrlDisplay"
-                      class="short-url-field"
-                      readonly
-                      placeholder="Generate to get link"
-                      aria-label="Short URL (copy after generate)"
-                    />
-                    <button type="button" class="short-url-copy" id="copyShortUrlBtn" disabled>
-                      Copy
-                    </button>
+                    <input type="text" id="shortUrlDisplay" class="short-url-field" readonly placeholder="Generate to get link" />
+                    <button type="button" class="short-url-copy" id="copyShortUrlBtn" disabled>Copy</button>
                   </div>
                 </div>
               </div>
             </div>
 
             <div class="section">
-              <div class="field-label-photo">Background image</div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                <label>Background image</label>
+              </div>
               <div class="file-picker-zone" id="imageDropzone">
                 <input id="image" class="file-input-hidden" type="file" accept="image/*" />
                 <label for="image" class="file-picker-card">
                   <span class="file-picker-title">Choose image</span>
-                  <span class="file-picker-hint">Click here or drag &amp; drop · PNG, JPG, WebP, GIF…</span>
+                  <span class="file-picker-hint">Click here or drag &amp; drop</span>
                 </label>
                 <p id="imageFileStatus" class="file-picker-status">No file selected</p>
               </div>
@@ -740,72 +701,35 @@
               <input type="hidden" id="crop_anchor_x" value="50" />
               <input type="hidden" id="crop_anchor_y" value="50" />
               <div id="framingEditorWrap" class="framing-editor-wrap hidden">
-                <label style="margin-top:0">Pan &amp; zoom</label>
-                <div class="crop-frame" id="cropFrame" title="Drag to move; slider or wheel to zoom">
+                <label>Pan &amp; zoom</label>
+                <div class="crop-frame" id="cropFrame">
                   <img id="cropImg" alt="" />
-                  <div class="crop-circle-overlay" aria-hidden="true"></div>
+                  <div class="crop-circle-overlay"></div>
                 </div>
                 <div class="zoom-toolbar">
-                  <span class="zoom-ico" title="Zoom out">▢</span>
                   <input type="range" id="cover_zoom" min="25" max="300" value="50" step="5" />
-                  <span class="zoom-ico" title="Zoom in">■</span>
                 </div>
-                <p class="crop-hint"><span class="range-val" id="coverZoomVal">50</span>% zoom</p>
               </div>
 
-              <label for="micro_dot_radius_pct">Dot radius <span class="range-val" id="dotSizeLabel">22%</span> of cell</label>
-              <input type="range" id="micro_dot_radius_pct" min="8" max="35" value="22" step="1" />
+              <label for="micro_dot_radius_pct">Dot radius <span class="range-val" id="dotSizeLabel">22%</span></label>
+              <input type="range" id="micro_dot_radius_pct" min="8" max="35" value="22" />
 
-              <label for="finder_shape">Finder shape (corner markers)</label>
+              <label for="finder_shape">Finder shape</label>
               <select id="finder_shape">
-                <option value="square" selected>Square (standard)</option>
-                <option value="circle">Circle (bullseye)</option>
+                <option value="square" selected>Square</option>
+                <option value="circle">Circle</option>
               </select>
+              
               <div class="row2" style="margin-top:10px">
                 <div>
                   <label for="finder_dark_color">Finder dark</label>
-                  <div class="finder-color-row">
-                    <input id="finder_dark_color" type="color" value="#000000" />
-                    <button
-                      type="button"
-                      class="ghost finder-pick-btn"
-                      id="finderDarkPickBtn"
-                      title="Click your photo in Pan &amp; zoom to pick this color (no magnifier)"
-                      aria-label="Pick finder dark color from photo"
-                      disabled
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m2 22 5-5" />
-                        <path d="M14.5 4.5a2.12 2.12 0 0 1 3 3L8 17l-4 1 1-4Z" />
-                      </svg>
-                    </button>
-                  </div>
+                  <input id="finder_dark_color" type="color" value="#000000" />
                 </div>
                 <div>
                   <label for="finder_light_color">Finder light</label>
-                  <div class="finder-color-row">
-                    <input id="finder_light_color" type="color" value="#ffffff" />
-                    <button
-                      type="button"
-                      class="ghost finder-pick-btn"
-                      id="finderLightPickBtn"
-                      title="Click your photo in Pan &amp; zoom to pick this color (no magnifier)"
-                      aria-label="Pick finder light color from photo"
-                      disabled
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="m2 22 5-5" />
-                        <path d="M14.5 4.5a2.12 2.12 0 0 1 3 3L8 17l-4 1 1-4Z" />
-                      </svg>
-                    </button>
-                  </div>
+                  <input id="finder_light_color" type="color" value="#ffffff" />
                 </div>
               </div>
-            </div>
-
-            <div class="toggle">
-              <input type="checkbox" id="livePreview" checked />
-              <span>Live preview</span>
             </div>
 
             <div class="publish-before-generate">
@@ -816,36 +740,25 @@
             </div>
 
             <div class="actions">
-              <button type="button" class="primary" id="generateBtn">
-                Generate
-              </button>
-              <button type="button" class="ghost" id="downloadBtn" disabled title="Available after a successful render">
-                Download PNG
-              </button>
-              <button type="button" class="ghost" id="resetDefaultsBtn" title="Reset controls to defaults (photo file unchanged)">
-                Reset
-              </button>
+              <button type="button" class="primary" id="generateBtn">Generate</button>
+              <button type="button" class="ghost" id="downloadBtn" disabled>Download PNG</button>
+              <button type="button" class="ghost" id="resetBtn">Reset</button>
             </div>
-            <div class="status" id="status"></div>
-            <div class="error" id="error" role="alert"></div>
+            <div id="error" class="error"></div>
+
+            <div id="historySection" class="history-section hidden">
+              <h4 class="history-title">Recent Links</h4>
+              <div id="historyList" class="history-list"></div>
+            </div>
           </div>
 
           <div class="card">
             <div class="card-head">
               <h2>Preview</h2>
-              <p class="card-sub">Same image as Download PNG</p>
+              <div id="status" class="status"></div>
             </div>
             <div class="preview-wrap" id="preview">
-              <div class="preview-placeholder">
-                <p class="preview-placeholder-lead">Choose a photo to begin</p>
-                <ol class="preview-steps">
-                  <li>Set link or text</li>
-                  <li>Pick background image</li>
-                  <li>Zoom &amp; drag inside the square</li>
-                  <li>Tweak dot size</li>
-                  <li>Generate → Download PNG</li>
-                </ol>
-              </div>
+              <div class="preview-placeholder">Choose a photo to begin</div>
             </div>
           </div>
         </div>
@@ -853,20 +766,19 @@
     </main>
   </div>
 
-  <!-- Examples Modal -->
   <div class="modal-overlay" id="examplesModal">
     <div class="modal-content">
-      <button type="button" class="modal-close" id="closeModalBtn" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close" id="closeModalBtn">&times;</button>
       <h3 class="modal-title">Micro-dot Style Examples</h3>
       <div class="examples-grid">
-        <div class="example-item">
-          <img src="/static/images/demo_microdot_1.png" alt="Example 1" loading="lazy" />
+        <div class="example-item" data-dots="18" data-finder="circle" data-dark="#220033" data-light="#ffffff">
+          <img src="/static/images/demo_microdot_1.png" alt="Ex 1" />
         </div>
-        <div class="example-item">
-          <img src="/static/images/demo_microdot_2.png" alt="Example 2" loading="lazy" />
+        <div class="example-item" data-dots="25" data-finder="square" data-dark="#000000" data-light="#eeeeee">
+          <img src="/static/images/demo_microdot_2.png" alt="Ex 2" />
         </div>
-        <div class="example-item">
-          <img src="/static/images/demo_microdot_3.png" alt="Example 3" loading="lazy" />
+        <div class="example-item" data-dots="15" data-finder="circle" data-dark="#112244" data-light="#ffffff">
+          <img src="/static/images/demo_microdot_3.png" alt="Ex 3" />
         </div>
       </div>
       <div class="modal-footer">
@@ -878,350 +790,77 @@
     </div>
   </div>
 
+  <div id="toast"></div>
+
   <script>
     const contentEl = document.getElementById("content");
     const useShortUrlEl = document.getElementById("use_short_url");
     const saveToAdminEl = document.getElementById("save_to_admin");
     const shortUrlDisplay = document.getElementById("shortUrlDisplay");
     const copyShortUrlBtn = document.getElementById("copyShortUrlBtn");
-    const QR_BOX_SIZE = 12;
-    const QR_BORDER = 2;
+    const imageEl = document.getElementById("image");
+    const microDotRadiusPctEl = document.getElementById("micro_dot_radius_pct");
+    const dotSizeLabel = document.getElementById("dotSizeLabel");
     const finderShapeEl = document.getElementById("finder_shape");
     const finderDarkColorEl = document.getElementById("finder_dark_color");
     const finderLightColorEl = document.getElementById("finder_light_color");
-    const finderDarkPickBtn = document.getElementById("finderDarkPickBtn");
-    const finderLightPickBtn = document.getElementById("finderLightPickBtn");
-    let finderPickMode = null;
-    const cropAnchorXEl = document.getElementById("crop_anchor_x");
-    const cropAnchorYEl = document.getElementById("crop_anchor_y");
-    const framingEditorWrap = document.getElementById("framingEditorWrap");
-    const cropFrame = document.getElementById("cropFrame");
-    const cropImg = document.getElementById("cropImg");
-    const coverZoomEl = document.getElementById("cover_zoom");
-    const coverZoomVal = document.getElementById("coverZoomVal");
-    const microDotRadiusPctEl = document.getElementById("micro_dot_radius_pct");
-    const dotSizeLabel = document.getElementById("dotSizeLabel");
-    const imageEl = document.getElementById("image");
-    const imageDropzone = document.getElementById("imageDropzone");
-    const livePreviewEl = document.getElementById("livePreview");
     const generateBtn = document.getElementById("generateBtn");
     const downloadBtn = document.getElementById("downloadBtn");
-    const resetDefaultsBtn = document.getElementById("resetDefaultsBtn");
+    const resetBtn = document.getElementById("resetBtn");
     const previewEl = document.getElementById("preview");
     const errorEl = document.getElementById("error");
     const statusEl = document.getElementById("status");
-    const shortLinkBundle = document.getElementById("shortLinkBundle");
-    
-    // Modal elements
+    const toast = document.getElementById("toast");
+    const historySection = document.getElementById("historySection");
+    const historyList = document.getElementById("historyList");
     const examplesModal = document.getElementById("examplesModal");
-    const showExamplesBtn = document.getElementById("showExamplesBtn");
-    const closeModalBtn = document.getElementById("closeModalBtn");
     const neverShowAgainCheckbox = document.getElementById("neverShowAgain");
 
     let currentBlobUrl = null;
-    let debounceTimer = null;
-    let inFlight = false;
     let cropImgUrl = null;
     const cropState = { iw: 0, ih: 0, ox: 0, oy: 0, zoom: 1, cw: 280, W: 0, H: 0 };
-    let framingDrag = null;
 
-    function clamp(v, lo, hi) {
-      return Math.max(lo, Math.min(hi, v));
-    }
-    function clamp01(v) {
-      return clamp(v, 0, 1);
+    function showToast(msg, type = 'ok') {
+      toast.textContent = msg;
+      toast.className = 'show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function syncDotSizeLabel() {
-      dotSizeLabel.textContent = microDotRadiusPctEl.value + "%";
-    }
+    function syncDotSizeLabel() { dotSizeLabel.textContent = microDotRadiusPctEl.value + "%"; }
 
-    function syncImageFileLabel() {
-      const st = document.getElementById("imageFileStatus");
-      if (!st || !imageEl) return;
-      const f = imageEl.files && imageEl.files[0];
-      st.textContent = f ? f.name : "No file selected";
-      st.classList.toggle("has-file", Boolean(f));
-    }
-
-    function syncShortUrlCopyUi() {
-      if (!shortUrlDisplay || !copyShortUrlBtn) return;
-      copyShortUrlBtn.disabled = !shortUrlDisplay.value.trim();
-    }
-
-    function clearShortUrlDisplay() {
-      if (!shortUrlDisplay) return;
-      shortUrlDisplay.value = "";
-      syncShortUrlCopyUi();
-    }
-
-    function previewEmptyHtml() {
-      return (
-        '<div class="preview-placeholder">' +
-        '<p class="preview-placeholder-lead">Choose a photo to begin</p>' +
-        '<ol class="preview-steps">' +
-        "<li>Set link or text</li>" +
-        "<li>Pick background image</li>" +
-        "<li>Zoom and drag inside the square</li>" +
-        "<li>Tweak dot size</li>" +
-        "<li>Generate → Download PNG</li>" +
-        "</ol></div>"
-      );
-    }
-
-    function rgbToHex(r, g, b) {
-      const h = (n) => n.toString(16).padStart(2, "0");
-      return "#" + h(r) + h(g) + h(b);
-    }
-
-    function sampleHexFromCropImgAtClient(clientX, clientY) {
-      const nw = cropImg.naturalWidth;
-      const nh = cropImg.naturalHeight;
-      if (!nw || !nh || !cropState.iw) return null;
-      const rect = cropFrame.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      const W = cropState.W;
-      const H = cropState.H;
-      if (W < 1e-6 || H < 1e-6) return null;
-      const u = (x - cropState.ox) / W;
-      const v = (y - cropState.oy) / H;
-      if (u < 0 || u > 1 || v < 0 || v > 1) return null;
-      const sx = Math.max(0, Math.min(nw - 1, Math.round(u * (nw - 1))));
-      const sy = Math.max(0, Math.min(nh - 1, Math.round(v * (nh - 1))));
-      const cv = document.createElement("canvas");
-      cv.width = nw;
-      cv.height = nh;
-      const ctx = cv.getContext("2d", { willReadFrequently: true });
-      ctx.drawImage(cropImg, 0, 0);
-      const d = ctx.getImageData(sx, sy, 1, 1).data;
-      return rgbToHex(d[0], d[1], d[2]);
-    }
-
-    function endFinderPickMode() {
-      finderPickMode = null;
-      if (!cropFrame.classList.contains("is-picking-color")) return;
-      cropFrame.classList.remove("is-picking-color");
-      if (statusEl.textContent.startsWith("Click the photo")) {
-        statusEl.textContent = "";
-        statusEl.classList.remove("live");
+    function updateHistory(url) {
+      let history = JSON.parse(localStorage.getItem("qrender_history") || "[]");
+      if (!history.includes(url)) {
+        history.unshift(url);
+        history = history.slice(0, 5);
+        localStorage.setItem("qrender_history", JSON.stringify(history));
       }
+      renderHistory();
     }
 
-    function pickFinderColor(targetInput) {
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem("qrender_history") || "[]");
+      if (history.length === 0) return;
+      historySection.classList.remove("hidden");
+      historyList.innerHTML = history.map(url => `
+        <div class="history-item">
+          <a href="${url}" target="_blank" class="history-link">${url}</a>
+          <button class="btn btn-mini" onclick="navigator.clipboard.writeText('${url}'); showToast('Copied!')">Copy</button>
+        </div>
+      `).join("");
+    }
+
+    async function generateNow() {
       errorEl.textContent = "";
-      if (!imageEl.files || !imageEl.files.length) {
-        errorEl.textContent = "Choose a background image first.";
-        scrollErrorIntoView();
-        return;
-      }
-      endFinderPickMode();
-      finderPickMode = { target: targetInput };
-      cropFrame.classList.add("is-picking-color");
-      statusEl.textContent = "Click the photo in Pan & zoom to pick this color (Esc to cancel).";
-      statusEl.classList.add("live");
-    }
-
-    function syncGenerateEnabled() {
-      const hasImg = Boolean(imageEl.files && imageEl.files.length > 0);
-      generateBtn.disabled = !hasImg;
-      if (finderDarkPickBtn) finderDarkPickBtn.disabled = !hasImg;
-      if (finderLightPickBtn) finderLightPickBtn.disabled = !hasImg;
-      if (!hasImg) endFinderPickMode();
-    }
-
-    function clampPan() {
-      const cw = cropState.cw;
-      const W = cropState.W;
-      const H = cropState.H;
-      if (W >= cw) {
-        cropState.ox = Math.min(0, Math.max(cw - W, cropState.ox));
-      } else {
-        cropState.ox = Math.min(cw - W, Math.max(0, cropState.ox));
-      }
-      if (H >= cw) {
-        cropState.oy = Math.min(0, Math.max(cw - H, cropState.oy));
-      } else {
-        cropState.oy = Math.min(cw - H, Math.max(0, cropState.oy));
-      }
-    }
-
-    function syncAnchorsFromFraming() {
-      const cw = cropState.cw;
-      const W = cropState.W;
-      const H = cropState.H;
-      const ox = cropState.ox;
-      const oy = cropState.oy;
-      let ax;
-      let ay;
-      if (W >= cw) {
-        const lx = Math.max(0, W - cw);
-        ax = lx > 1e-6 ? (-ox) / lx : 0.5;
-      } else {
-        const lx = Math.max(0, cw - W);
-        ax = lx > 1e-6 ? ox / lx : 0.5;
-      }
-      if (H >= cw) {
-        const ly = Math.max(0, H - cw);
-        ay = ly > 1e-6 ? (-oy) / ly : 0.5;
-      } else {
-        const ly = Math.max(0, cw - H);
-        ay = ly > 1e-6 ? oy / ly : 0.5;
-      }
-      cropAnchorXEl.value = String(Math.round(clamp01(ax) * 100));
-      cropAnchorYEl.value = String(Math.round(clamp01(ay) * 100));
-    }
-
-    function layoutFramingEditor(resetCenter) {
-      const iw = cropState.iw;
-      const ih = cropState.ih;
-      if (!iw || !ih) return;
-      const cw = cropFrame.clientWidth || 280;
-      const cw0 = cropState.cw;
-      const W0 = cropState.W;
-      const H0 = cropState.H;
-      const ox0 = cropState.ox;
-      const oy0 = cropState.oy;
-      cropState.zoom = Number(coverZoomEl.value) / 100;
-      const S = Math.max(cw / iw, cw / ih) * cropState.zoom;
-      const W = iw * S;
-      const H = ih * S;
-      cropState.cw = cw;
-      cropState.W = W;
-      cropState.H = H;
-      if (resetCenter) {
-        cropState.ox = (cw - W) / 2;
-        cropState.oy = (cw - H) / 2;
-      } else if (W0 > 1e-6 && H0 > 1e-6 && cw0 > 0) {
-        const u = (cw0 / 2 - ox0) / W0;
-        const v = (cw0 / 2 - oy0) / H0;
-        cropState.ox = cw / 2 - u * W;
-        cropState.oy = cw / 2 - v * H;
-      } else {
-        cropState.ox = (cw - W) / 2;
-        cropState.oy = (cw - H) / 2;
-      }
-      clampPan();
-      cropImg.style.width = W + "px";
-      cropImg.style.height = H + "px";
-      cropImg.style.left = cropState.ox + "px";
-      cropImg.style.top = cropState.oy + "px";
-      syncAnchorsFromFraming();
-    }
-
-    function initFramingFromImage() {
-      const file = imageEl.files && imageEl.files[0];
-      if (!file) {
-        framingEditorWrap.classList.add("hidden");
-        cropState.iw = 0;
-        cropState.ih = 0;
-        return;
-      }
-      framingEditorWrap.classList.remove("hidden");
-      if (cropImgUrl) URL.revokeObjectURL(cropImgUrl);
-      cropImgUrl = URL.createObjectURL(file);
-      cropImg.src = cropImgUrl;
-      const im = new Image();
-      im.onload = () => {
-        cropState.iw = im.naturalWidth;
-        cropState.ih = im.naturalHeight;
-        requestAnimationFrame(() => layoutFramingEditor(true));
-      };
-      im.src = cropImgUrl;
-    }
-
-    new ResizeObserver(() => {
-      if (cropState.iw) layoutFramingEditor(false);
-    }).observe(cropFrame);
-
-    function syncSaveToAdminEnabled() {
-      const on = useShortUrlEl.checked;
-      saveToAdminEl.disabled = !on;
-      if (!on) saveToAdminEl.checked = false;
-      if (shortLinkBundle) shortLinkBundle.classList.toggle("is-on", on);
-      clearShortUrlDisplay();
-    }
-
-    function resetControlsToDefaults() {
-      endFinderPickMode();
-      contentEl.value = "";
-      useShortUrlEl.checked = false;
-      syncSaveToAdminEnabled();
-      finderShapeEl.value = "square";
-      finderDarkColorEl.value = "#000000";
-      finderLightColorEl.value = "#ffffff";
-      cropAnchorXEl.value = "50";
-      cropAnchorYEl.value = "50";
-      coverZoomEl.value = "50";
-      coverZoomVal.textContent = "50";
-      microDotRadiusPctEl.value = "22";
-      syncDotSizeLabel();
-      livePreviewEl.checked = true;
-      errorEl.textContent = "";
-      if (cropState.iw) {
-        layoutFramingEditor(true);
-      } else {
-        initFramingFromImage();
-      }
-      statusEl.textContent = "Reset";
-      statusEl.classList.add("live");
-      syncGenerateEnabled();
-      scheduleGenerate("reset");
-    }
-
-    function setPreviewLoading() {
-      if (currentBlobUrl) {
-        URL.revokeObjectURL(currentBlobUrl);
-        currentBlobUrl = null;
-      }
-      previewEl.innerHTML =
-        '<div class="preview-loading" role="status" aria-live="polite">' +
-        '<div class="preview-spinner" aria-hidden="true"></div>' +
-        "<span>Rendering…</span></div>";
-      downloadBtn.disabled = true;
-    }
-
-    function showPreviewFromBlob(blob) {
-      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
-      currentBlobUrl = URL.createObjectURL(blob);
-      previewEl.innerHTML = '<img src="' + currentBlobUrl + '" alt="QR preview" />';
-      downloadBtn.disabled = false;
-    }
-
-    function scrollErrorIntoView() {
-      if (errorEl.textContent) errorEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-
-    async function generateNow(reason) {
-      errorEl.textContent = "";
-
-      if (!imageEl.files || imageEl.files.length === 0) {
-        if (reason !== "manual") return;
-        errorEl.textContent = "Choose a background image first.";
-        scrollErrorIntoView();
-        return;
-      }
-
-      const contentTrim = contentEl.value.trim();
-      if (!contentTrim) {
-        if (reason !== "manual") return;
-        errorEl.textContent = "Enter a link or text.";
-        scrollErrorIntoView();
-        return;
-      }
-
-      setPreviewLoading();
+      if (!imageEl.files[0] || !contentEl.value.trim()) return showToast("Image and content required", "err");
+      
+      previewEl.innerHTML = '<div class="preview-loading"><div class="preview-spinner"></div><span>Rendering...</span></div>';
+      generateBtn.disabled = true;
+      
       try {
-        const frac = (Number(microDotRadiusPctEl.value) / 100).toFixed(2);
         const form = new FormData();
         form.append("content", contentEl.value);
-        form.append("box_size", String(QR_BOX_SIZE));
-        form.append("border", String(QR_BORDER));
-        form.append("crop_anchor_x", (Number(cropAnchorXEl.value) / 100).toFixed(4));
-        form.append("crop_anchor_y", (Number(cropAnchorYEl.value) / 100).toFixed(4));
-        form.append("fit_mode", "cover");
-        form.append("cover_zoom", (Number(coverZoomEl.value) / 100).toFixed(2));
-        form.append("micro_dot_radius_frac", frac);
+        form.append("micro_dot_radius_frac", (microDotRadiusPctEl.value / 100).toFixed(2));
         form.append("finder_shape", finderShapeEl.value);
         form.append("finder_dark_color", finderDarkColorEl.value);
         form.append("finder_light_color", finderLightColorEl.value);
@@ -1230,224 +869,79 @@
         form.append("image", imageEl.files[0]);
 
         const resp = await fetch("/qr/art", { method: "POST", body: form });
-        if (!resp.ok) {
-          const payload = await resp.json().catch(() => ({}));
-          throw new Error(payload.detail || ("HTTP " + resp.status));
-        }
+        if (!resp.ok) throw new Error("Generation failed");
+        
         const enc = resp.headers.get("X-QR-Encoded-Content");
-        if (useShortUrlEl.checked && enc) {
+        if (enc) {
           shortUrlDisplay.value = enc.trim();
-        } else {
-          clearShortUrlDisplay();
+          updateHistory(enc.trim());
+          copyShortUrlBtn.disabled = false;
         }
-        syncShortUrlCopyUi();
+
         const blob = await resp.blob();
-        showPreviewFromBlob(blob);
-        statusEl.textContent = (livePreviewEl.checked ? "Live: " : "") + (reason || "OK");
-        statusEl.classList.add("live");
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+        currentBlobUrl = URL.createObjectURL(blob);
+        previewEl.innerHTML = `<img src="${currentBlobUrl}" alt="QR">`;
+        downloadBtn.disabled = false;
+        showToast("QR Generated!");
       } catch (e) {
-        previewEl.innerHTML = previewEmptyHtml();
-        clearShortUrlDisplay();
-        errorEl.textContent = e.message || String(e);
-        scrollErrorIntoView();
-        statusEl.textContent = "";
-        statusEl.classList.remove("live");
+        errorEl.textContent = e.message;
+        showToast(e.message, "err");
+      } finally {
+        generateBtn.disabled = false;
       }
     }
 
-    function scheduleGenerate(reason) {
-      if (!livePreviewEl.checked && reason !== "manual") return;
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        if (inFlight) return;
-        inFlight = true;
-        generateNow(reason).finally(() => { inFlight = false; });
-      }, reason === "manual" ? 0 : 420);
-    }
-
-    // Modal Control
-    function openModal() {
-      examplesModal.classList.add("is-open");
-      document.body.style.overflow = "hidden";
-    }
+    // Modal & Template Logic
+    function openModal() { examplesModal.classList.add("is-open"); }
     function closeModal() {
       examplesModal.classList.remove("is-open");
-      document.body.style.overflow = "";
-      if (neverShowAgainCheckbox.checked) {
-        localStorage.setItem("qrender_hide_examples", "true");
-      }
+      if (neverShowAgainCheckbox.checked) localStorage.setItem("qrender_hide_examples", "true");
     }
 
-    showExamplesBtn.addEventListener("click", openModal);
-    closeModalBtn.addEventListener("click", closeModal);
-    examplesModal.addEventListener("click", (e) => {
-      if (e.target === examplesModal) closeModal();
-    });
-
-    // Startup Logic
-    window.addEventListener("DOMContentLoaded", () => {
-      if (localStorage.getItem("qrender_hide_examples") !== "true") {
-        setTimeout(openModal, 600);
-      }
-    });
-
-    microDotRadiusPctEl.addEventListener("input", () => {
-      syncDotSizeLabel();
-      scheduleGenerate("dots");
-    });
-    cropFrame.addEventListener("pointerdown", (e) => {
-      if (finderPickMode) {
-        e.preventDefault();
-        const hex = sampleHexFromCropImgAtClient(e.clientX, e.clientY);
-        if (hex) {
-          finderPickMode.target.value = hex;
-          finderPickMode.target.dispatchEvent(new Event("input", { bubbles: true }));
-          scheduleGenerate("finder");
-          endFinderPickMode();
-        } else {
-          errorEl.textContent = "Click on the photo inside the square, not the empty margins.";
-          scrollErrorIntoView();
-        }
-        return;
-      }
-      framingDrag = { px: e.clientX, py: e.clientY, ox: cropState.ox, oy: cropState.oy };
-      cropFrame.setPointerCapture(e.pointerId);
-    });
-    cropFrame.addEventListener("pointermove", (e) => {
-      if (!framingDrag) return;
-      cropState.ox = framingDrag.ox + (e.clientX - framingDrag.px);
-      cropState.oy = framingDrag.oy + (e.clientY - framingDrag.py);
-      clampPan();
-      cropImg.style.left = cropState.ox + "px";
-      cropImg.style.top = cropState.oy + "px";
-      syncAnchorsFromFraming();
-      scheduleGenerate("framing");
-    });
-    cropFrame.addEventListener("pointerup", () => { framingDrag = null; });
-    cropFrame.addEventListener("pointercancel", () => { framingDrag = null; });
-    cropFrame.addEventListener(
-      "wheel",
-      (e) => {
-        e.preventDefault();
-        const z = Number(coverZoomEl.value);
-        coverZoomEl.value = String(clamp(z + (e.deltaY > 0 ? -5 : 5), 25, 300));
-        coverZoomVal.textContent = coverZoomEl.value;
-        cropState.zoom = Number(coverZoomEl.value) / 100;
-        layoutFramingEditor(false);
-        scheduleGenerate("zoom");
-      },
-      { passive: false },
-    );
-    coverZoomEl.addEventListener("input", () => {
-      coverZoomVal.textContent = coverZoomEl.value;
-      cropState.zoom = Number(coverZoomEl.value) / 100;
-      layoutFramingEditor(false);
-      scheduleGenerate("zoom");
-    });
-
-    useShortUrlEl.addEventListener("change", syncSaveToAdminEnabled);
-
-    copyShortUrlBtn.addEventListener("click", async () => {
-      const t = shortUrlDisplay.value.trim();
-      if (!t) return;
-      try {
-        await navigator.clipboard.writeText(t);
-      } catch {
-        shortUrlDisplay.select();
-        try {
-          document.execCommand("copy");
-        } catch {
-          return;
-        }
-      }
-      const prev = copyShortUrlBtn.textContent;
-      copyShortUrlBtn.textContent = "Copied";
-      setTimeout(() => { copyShortUrlBtn.textContent = prev; }, 1400);
-    });
-
-    if (finderDarkPickBtn) {
-      finderDarkPickBtn.addEventListener("click", () => pickFinderColor(finderDarkColorEl));
-    }
-    if (finderLightPickBtn) {
-      finderLightPickBtn.addEventListener("click", () => pickFinderColor(finderLightColorEl));
-    }
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        endFinderPickMode();
+    document.querySelectorAll(".example-item").forEach(item => {
+      item.addEventListener("click", () => {
+        microDotRadiusPctEl.value = item.dataset.dots;
+        finderShapeEl.value = item.dataset.finder;
+        finderDarkColorEl.value = item.dataset.dark;
+        finderLightColorEl.value = item.dataset.light;
+        syncDotSizeLabel();
         closeModal();
-      }
+        showToast("Template applied!");
+      });
     });
 
-    ["input", "change"].forEach((evt) => {
-      contentEl.addEventListener(evt, () => scheduleGenerate("content"));
-      useShortUrlEl.addEventListener(evt, () => scheduleGenerate("short"));
-      finderShapeEl.addEventListener(evt, () => scheduleGenerate("finder"));
-      finderDarkColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
-      finderLightColorEl.addEventListener(evt, () => scheduleGenerate("finder"));
-    });
-    imageEl.addEventListener("change", () => {
-      syncImageFileLabel();
-      initFramingFromImage();
-      syncGenerateEnabled();
-      scheduleGenerate("image");
+    document.getElementById("showExamplesBtn").addEventListener("click", openModal);
+    document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+    
+    useShortUrlEl.addEventListener("change", () => {
+      saveToAdminEl.disabled = !useShortUrlEl.checked;
+      if (!useShortUrlEl.checked) saveToAdminEl.checked = false;
     });
 
-    if (imageDropzone) {
-      ["dragenter", "dragover"].forEach((evName) => {
-        imageDropzone.addEventListener(evName, (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          imageDropzone.classList.add("is-drag");
-        });
-      });
-      imageDropzone.addEventListener("dragleave", (e) => {
-        if (!imageDropzone.contains(e.relatedTarget)) {
-          imageDropzone.classList.remove("is-drag");
-        }
-      });
-      imageDropzone.addEventListener("drop", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        imageDropzone.classList.remove("is-drag");
-        const file = e.dataTransfer.files && e.dataTransfer.files[0];
-        if (!file || !file.type.startsWith("image/")) return;
-        const dt = new DataTransfer();
-        dt.items.add(file);
-        imageEl.files = dt.files;
-        imageEl.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-    }
-    livePreviewEl.addEventListener("change", () => {
-      statusEl.textContent = livePreviewEl.checked ? "Live preview on" : "Live preview off";
-      statusEl.classList.toggle("live", livePreviewEl.checked);
-      if (livePreviewEl.checked) scheduleGenerate("live on");
+    copyShortUrlBtn.addEventListener("click", () => {
+      navigator.clipboard.writeText(shortUrlDisplay.value).then(() => showToast("Link copied!"));
     });
-
-    generateBtn.addEventListener("click", () => generateNow("manual"));
-    resetDefaultsBtn.addEventListener("click", () => resetControlsToDefaults());
 
     downloadBtn.addEventListener("click", () => {
-      if (!currentBlobUrl) return;
       const a = document.createElement("a");
       a.href = currentBlobUrl;
-      a.download = "qrender-microdot.png";
+      a.download = "qrender.png";
       a.click();
     });
 
-    syncDotSizeLabel();
-    syncImageFileLabel();
-    syncSaveToAdminEnabled();
-    syncShortUrlCopyUi();
-    syncGenerateEnabled();
+    resetBtn.addEventListener("click", () => location.reload());
+    imageEl.addEventListener("change", () => {
+      document.getElementById("imageFileStatus").textContent = imageEl.files[0]?.name || "No file";
+      generateBtn.disabled = false;
+    });
 
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/static/sw.js').catch(err => {
-          console.error('SW registration failed:', err);
-        });
-      });
-    }
+    microDotRadiusPctEl.addEventListener("input", syncDotSizeLabel);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderHistory();
+      if (localStorage.getItem("qrender_hide_examples") !== "true") setTimeout(openModal, 600);
+    });
   </script>
 </body>
 </html>

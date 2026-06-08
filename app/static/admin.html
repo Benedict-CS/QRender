@@ -44,6 +44,9 @@
       border-bottom: 1px solid var(--border);
       background: rgba(12, 15, 20, 0.85);
       backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
     .site-header-inner {
       display: flex;
@@ -121,47 +124,6 @@
       flex: 1;
       padding: 20px 0 36px;
     }
-    .site-footer {
-      flex-shrink: 0;
-      margin-top: auto;
-      border-top: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.22);
-      padding: 18px 0 26px;
-    }
-    .site-footer-inner {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-    }
-    .footer-nav {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px 16px;
-    }
-    .footer-nav a {
-      font-size: 0.82rem;
-      color: var(--muted);
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .footer-nav a:hover { color: var(--accent); }
-    .footer-copy {
-      margin: 0;
-      font-size: 0.78rem;
-      color: var(--muted);
-      opacity: 0.9;
-    }
-    .footer-copy a {
-      color: inherit;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-    .footer-copy a:hover {
-      color: var(--accent);
-    }
     .sr-only {
       position: absolute;
       width: 1px;
@@ -191,6 +153,30 @@
     }
     .hidden { display: none !important; }
 
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 2000;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.err { border-color: var(--err); }
+    #toast.ok { border-color: var(--ok); }
+
     /* Login */
     .login-wrap {
       max-width: 420px;
@@ -207,12 +193,6 @@
       margin: 0 0 6px;
       font-size: 1.35rem;
       letter-spacing: -0.02em;
-    }
-    .login-card .sub {
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.5;
-      margin: 0 0 22px;
     }
     .login-card label { display: block; font-size: 0.82rem; color: #c7d2e5; margin-bottom: 8px; }
     .login-card input[type="password"] {
@@ -243,17 +223,9 @@
       gap: 10px;
       font-size: 0.88rem;
       color: #dbe4f5;
+      cursor: pointer;
     }
     .remember input { accent-color: var(--accent); width: auto; }
-    .login-footer {
-      margin-top: 20px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      font-size: 0.8rem;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .login-footer a { color: var(--accent); }
 
     .btn {
       padding: 9px 16px;
@@ -267,6 +239,7 @@
       text-decoration: none;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
     }
     .btn:hover { border-color: #3d4d63; background: rgba(255,255,255,0.04); }
@@ -277,15 +250,6 @@
     }
     .btn-primary:hover { filter: brightness(1.06); }
 
-    .hint {
-      color: var(--muted);
-      font-size: 0.85rem;
-      line-height: 1.5;
-      margin: 0 0 18px;
-      max-width: 720px;
-    }
-    .hint code { background: var(--surface2); padding: 2px 7px; border-radius: 6px; font-size: 0.84em; }
-
     .card {
       background: linear-gradient(180deg, var(--surface) 0%, #121722 100%);
       border: 1px solid var(--border);
@@ -294,17 +258,44 @@
       margin-bottom: 16px;
       box-shadow: 0 12px 40px rgba(0,0,0,0.25);
     }
-    .card-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
-    .msg { font-size: 0.88rem; min-height: 1.3em; margin-top: 8px; }
-    .msg.ok { color: var(--ok); }
-    .msg.err { color: var(--err); }
+    .card-toolbar { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 12px; 
+      align-items: center; 
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-input-wrap {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.88rem;
+    }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
 
     table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
     th, td {
       text-align: left;
       padding: 12px 10px;
       border-bottom: 1px solid var(--border);
-      vertical-align: top;
+      vertical-align: middle;
     }
     th {
       color: var(--muted);
@@ -313,11 +304,13 @@
       text-transform: uppercase;
       letter-spacing: 0.07em;
       background: rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     tr:hover td { background: rgba(91, 140, 255, 0.04); }
     td input.edit-target {
       width: 100%;
-      min-width: 180px;
       padding: 8px 10px;
       border-radius: 9px;
       border: 1px solid var(--border);
@@ -333,35 +326,24 @@
     code { background: var(--surface2); padding: 2px 7px; border-radius: 6px; font-size: 0.85em; }
     .stats { color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
 
-    .qr-cell { width: 118px; }
+    .qr-cell { width: 100px; }
     .qr-cell img.qr-preview-img {
       display: block;
-      border-radius: 10px;
+      border-radius: 8px;
       background: #fff;
-      padding: 6px;
-      width: 96px;
-      height: 96px;
+      padding: 4px;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
     }
-    .qr-payload {
-      word-break: break-all;
-      margin-top: 8px;
-      max-width: 200px;
-      font-size: 0.72rem;
-      line-height: 1.35;
-      color: var(--muted);
-    }
     .btn-mini {
-      margin-top: 8px;
-      padding: 5px 10px;
-      font-size: 0.75rem;
-      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      border-radius: 6px;
     }
-    .actions-cell .btn { padding: 6px 10px; font-size: 0.78rem; margin-right: 6px; margin-bottom: 4px; }
-    .table-scroll { overflow-x: auto; margin-top: 4px; border-radius: 10px; border: 1px solid var(--border); }
-    .table-scroll table { margin: 0; }
-    .table-scroll th:first-child, .table-scroll td:first-child { padding-left: 14px; }
-    .table-scroll th:last-child, .table-scroll td:last-child { padding-right: 14px; }
+    .actions-cell { white-space: nowrap; }
+    .actions-cell .btn { padding: 6px 10px; font-size: 0.78rem; margin-right: 4px; }
+    .table-scroll { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); max-height: 70vh; overflow-y: auto; }
   </style>
 </head>
 <body>
@@ -374,520 +356,223 @@
         </a>
         <nav class="site-nav" aria-label="Primary">
           <a class="nav-link" href="/">Generator</a>
-          <span id="headerNavAdmin" class="nav-link nav-link--current" title="This page">Admin</span>
+          <span class="nav-link nav-link--current">Admin</span>
           <button type="button" class="nav-link nav-link--accent hidden" id="headerSignOut">Sign out</button>
         </nav>
       </div>
     </header>
 
     <main class="site-main">
-    <!-- Login: same secret as server ADMIN_SECRET; sent as X-Admin-Token after sign-in -->
-    <div id="loginScreen" class="login-wrap">
-      <div class="login-card">
-        <h1>Admin sign-in</h1>
-        <p class="sub">Password matches server <code>ADMIN_SECRET</code>.</p>
-        <label for="loginPassword">Password</label>
-        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Admin password" />
-        <div class="login-actions">
-          <label class="remember">
-            <input type="checkbox" id="rememberMe" />
-            <span>Remember me</span>
-          </label>
-          <button type="button" class="primary" id="loginBtn">Sign in</button>
-        </div>
-        <div id="loginMsg" class="msg" aria-live="polite"></div>
-      </div>
-    </div>
-
-    <div id="adminDashboard" class="hidden">
-      <div class="shell-inner">
-      <p class="hint"><code>PUBLIC_BASE_URL</code> in <code>.env</code> for correct short-link URLs.</p>
-
-      <div class="card">
-        <div class="card-toolbar">
-          <button type="button" class="btn btn-primary" id="reloadBtn">Reload</button>
-        </div>
-        <div id="listMsg" class="msg"></div>
-        <div class="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>QR</th>
-                <th>Code</th>
-                <th>Destination</th>
-                <th>Hits</th>
-                <th>Last scan</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
+      <div id="loginScreen" class="login-wrap">
+        <div class="login-card">
+          <h1>Admin sign-in</h1>
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Admin password" />
+          <div class="login-actions">
+            <label class="remember">
+              <input type="checkbox" id="rememberMe" />
+              <span>Remember me</span>
+            </label>
+            <button type="button" class="primary" id="loginBtn">Sign in</button>
+          </div>
         </div>
       </div>
-      </div>
-    </div>
 
+      <div id="adminDashboard" class="hidden">
+        <div class="shell-inner">
+          <div class="card">
+            <div class="card-toolbar">
+              <div class="search-input-wrap">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search codes or destinations..." />
+              </div>
+              <button type="button" class="btn btn-primary" id="reloadBtn">Reload</button>
+              <button type="button" class="btn" id="exportBtn">Export CSV</button>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>QR</th>
+                    <th>Code</th>
+                    <th>Destination</th>
+                    <th>Hits</th>
+                    <th>Last scan</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
-
-    <footer class="site-footer">
-      <div class="shell-inner site-footer-inner">
-        <nav class="footer-nav" aria-label="Footer">
-          <a href="/">Generator</a>
-          <a
-            class="github-icon-link footer-github"
-            href="https://github.com/Benedict-CS/QRender"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="QRender on GitHub"
-          >
-            <span class="sr-only">QRender on GitHub</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-1.455-3.795-1.455-.51-1.305-1.245-1.65-1.245-1.65-1.005-.69.075-.675.075-.675 1.11.075 1.695 1.14 1.695 1.14 1.005 1.725 2.64 1.23 3.285.93.105-.735.39-1.23.705-1.515-2.4-.27-4.935-1.215-4.935-5.43 0-1.2.42-2.19 1.125-2.955-.12-.27-.495-1.365.105-2.85 0 0 .915-.285 3.005 1.125.87-.24 1.815-.36 2.745-.36s1.875.12 2.745.36c2.085-1.41 3-1.125 3-1.125.6 1.485.225 2.58.12 2.85.705.765 1.125 1.755 1.125 2.955 0 4.23-2.535 5.16-4.95 5.43.39.33.75.96.75 1.935 0 1.395-.015 2.52-.015 2.865 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-            </svg>
-          </a>
-        </nav>
-        <p class="footer-copy">
-          © 2026
-          <a href="https://benedict.winlab.tw" target="_blank" rel="noopener noreferrer">Benedict</a>
-        </p>
-      </div>
-    </footer>
   </div>
+
+  <div id="toast"></div>
 
   <script>
     const STORAGE_SESSION = "qrender_admin_session";
     const STORAGE_PERSIST = "qrender_admin_token";
-    const LEGACY_KEY = "qrender_admin_token";
 
     const loginScreen = document.getElementById("loginScreen");
     const adminDashboard = document.getElementById("adminDashboard");
     const loginPassword = document.getElementById("loginPassword");
     const rememberMe = document.getElementById("rememberMe");
     const loginBtn = document.getElementById("loginBtn");
-    const loginMsg = document.getElementById("loginMsg");
-    const headerNavAdmin = document.getElementById("headerNavAdmin");
     const headerSignOut = document.getElementById("headerSignOut");
-    const listMsg = document.getElementById("listMsg");
     const tbody = document.getElementById("tbody");
     const reloadBtn = document.getElementById("reloadBtn");
+    const searchInput = document.getElementById("searchInput");
+    const exportBtn = document.getElementById("exportBtn");
+    const toast = document.getElementById("toast");
 
-    (function migrateLegacy() {
-      const old = localStorage.getItem(LEGACY_KEY);
-      if (old && !localStorage.getItem(STORAGE_PERSIST)) {
-        localStorage.setItem(STORAGE_PERSIST, old);
-        localStorage.removeItem(LEGACY_KEY);
-      }
-    })();
+    let allLinks = [];
+
+    function showToast(msg, type = 'ok') {
+      toast.textContent = msg;
+      toast.className = 'show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
 
     function getToken() {
-      return (
-        sessionStorage.getItem(STORAGE_SESSION) ||
-        localStorage.getItem(STORAGE_PERSIST) ||
-        ""
-      ).trim();
-    }
-
-    function setSession(secret, persist) {
-      sessionStorage.removeItem(STORAGE_SESSION);
-      localStorage.removeItem(STORAGE_PERSIST);
-      if (persist) {
-        localStorage.setItem(STORAGE_PERSIST, secret);
-      } else {
-        sessionStorage.setItem(STORAGE_SESSION, secret);
-      }
-    }
-
-    function clearSession() {
-      sessionStorage.removeItem(STORAGE_SESSION);
-      localStorage.removeItem(STORAGE_PERSIST);
-      localStorage.removeItem(LEGACY_KEY);
-    }
-
-    function setMsg(el, text, ok) {
-      el.textContent = text || "";
-      el.className = "msg " + (ok === true ? "ok" : ok === false ? "err" : "");
+      return (sessionStorage.getItem(STORAGE_SESSION) || localStorage.getItem(STORAGE_PERSIST) || "").trim();
     }
 
     function showLogin() {
       loginScreen.classList.remove("hidden");
       adminDashboard.classList.add("hidden");
+      headerSignOut.classList.add("hidden");
       loginPassword.value = "";
-      if (headerNavAdmin) headerNavAdmin.classList.remove("hidden");
-      if (headerSignOut) headerSignOut.classList.add("hidden");
     }
 
     function showDashboard() {
       loginScreen.classList.add("hidden");
       adminDashboard.classList.remove("hidden");
-      if (headerNavAdmin) headerNavAdmin.classList.add("hidden");
-      if (headerSignOut) headerSignOut.classList.remove("hidden");
+      headerSignOut.classList.remove("hidden");
     }
 
     async function api(path, opts) {
       const tok = getToken();
-      const headers = Object.assign({}, opts && opts.headers);
-      if (tok) headers["X-Admin-Token"] = tok;
+      const headers = Object.assign({ "X-Admin-Token": tok }, opts && opts.headers);
       const r = await fetch(path, Object.assign({}, opts, { headers }));
-      const txt = await r.text();
-      let data = null;
-      try {
-        data = txt ? JSON.parse(txt) : null;
-      } catch (_) {
-        data = { detail: txt };
+      if (r.status === 403) {
+        sessionStorage.removeItem(STORAGE_SESSION);
+        localStorage.removeItem(STORAGE_PERSIST);
+        showLogin();
+        throw new Error("Session expired. Please sign in again.");
       }
-      if (!r.ok) {
-        const msg =
-          data && data.detail
-            ? Array.isArray(data.detail)
-              ? data.detail.map((d) => d.msg).join("; ")
-              : data.detail
-            : "HTTP " + r.status;
-        throw new Error(msg);
-      }
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.detail || "Error");
       return data;
-    }
-
-    async function tryResume() {
-      const t = getToken();
-      if (!t) {
-        showLogin();
-        return;
-      }
-      try {
-        await api("/api/admin/config");
-        showDashboard();
-        loadList();
-      } catch (_) {
-        clearSession();
-        showLogin();
-        setMsg(loginMsg, "Sign in again (invalid or outdated token).", false);
-      }
     }
 
     loginBtn.addEventListener("click", async () => {
       const pwd = loginPassword.value.trim();
-      if (!pwd) {
-        setMsg(loginMsg, "Enter password.", false);
-        return;
-      }
+      if (!pwd) return showToast("Enter password", "err");
       loginBtn.disabled = true;
-      setMsg(loginMsg, "Checking…", null);
       try {
-        const r = await fetch("/api/admin/config", {
-          headers: { "X-Admin-Token": pwd },
+        await fetch("/api/admin/config", { headers: { "X-Admin-Token": pwd } }).then(r => {
+          if (!r.ok) throw new Error("Invalid password");
         });
-        const txt = await r.text();
-        if (!r.ok) {
-          let detail = txt;
-          try {
-            const j = JSON.parse(txt);
-            detail = j.detail || txt;
-          } catch (_) {}
-          throw new Error(typeof detail === "string" ? detail : "Unauthorized");
-        }
-        setSession(pwd, rememberMe.checked);
-        setMsg(loginMsg, "", null);
+        if (rememberMe.checked) localStorage.setItem(STORAGE_PERSIST, pwd);
+        else sessionStorage.setItem(STORAGE_SESSION, pwd);
         showDashboard();
         loadList();
       } catch (e) {
-        setMsg(loginMsg, e.message || String(e), false);
+        showToast(e.message, "err");
       } finally {
         loginBtn.disabled = false;
       }
     });
 
-    loginPassword.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") loginBtn.click();
+    headerSignOut.addEventListener("click", () => {
+      sessionStorage.removeItem(STORAGE_SESSION);
+      localStorage.removeItem(STORAGE_PERSIST);
+      showLogin();
+      showToast("Signed out");
     });
 
-    if (headerSignOut) {
-      headerSignOut.addEventListener("click", () => {
-        clearSession();
-        tbody.innerHTML = "";
-        showLogin();
-        setMsg(loginMsg, "Signed out", true);
+    function renderTable(links) {
+      tbody.innerHTML = "";
+      links.forEach(l => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="qr-cell"><img class="qr-preview-img" data-code="${l.code}" alt="QR" src="/api/admin/links/${l.code}/art.png?t=${Date.now()}"></td>
+          <td><code>${l.code}</code></td>
+          <td><input type="text" class="edit-target" value="${l.target}" readOnly data-code="${l.code}" data-orig="${l.target}"></td>
+          <td class="stats">${l.hit_count || 0}</td>
+          <td class="stats">${l.last_hit_at ? new Date(l.last_hit_at * 1000).toLocaleString() : '—'}</td>
+          <td class="actions-cell">
+            <button class="btn btn-mini edit-btn">Edit</button>
+            <button class="btn btn-mini save-btn hidden btn-primary">Save</button>
+            <button class="btn btn-mini del-btn">Del</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
       });
-    }
-
-    function fmtTs(ts) {
-      if (ts == null || ts === "") return "—";
-      const d = new Date(ts * 1000);
-      return isNaN(d.getTime()) ? "—" : d.toLocaleString();
-    }
-
-    function exitAllEditModes(exceptTr) {
-      tbody.querySelectorAll("tr[data-editing='1']").forEach((tr) => {
-        if (exceptTr && tr === exceptTr) return;
-        setRowEditing(tr, false);
-      });
-    }
-
-    function setRowEditing(tr, editing) {
-      const inp = tr.querySelector("input.edit-target");
-      if (!inp) return;
-      const editBtn = tr.querySelector(".edit-row");
-      const saveBtn = tr.querySelector(".save-row");
-      const cancelBtn = tr.querySelector(".cancel-edit");
-      if (!editBtn || !saveBtn || !cancelBtn) return;
-      if (editing) {
-        exitAllEditModes(tr);
-        inp.readOnly = false;
-        tr.dataset.editing = "1";
-        editBtn.classList.add("hidden");
-        saveBtn.classList.remove("hidden");
-        cancelBtn.classList.remove("hidden");
-        requestAnimationFrame(() => inp.focus());
-      } else {
-        inp.readOnly = true;
-        inp.value = inp.dataset.originalTarget || "";
-        delete tr.dataset.editing;
-        editBtn.classList.remove("hidden");
-        saveBtn.classList.add("hidden");
-        cancelBtn.classList.add("hidden");
-      }
-    }
-
-    function row(link, payloadFull) {
-      const tr = document.createElement("tr");
-
-      const tdQr = document.createElement("td");
-      tdQr.className = "qr-cell";
-      const qrImg = document.createElement("img");
-      qrImg.className = "qr-preview-img";
-      qrImg.alt = "Loading…";
-      qrImg.dataset.code = link.code;
-      tdQr.appendChild(qrImg);
-      const cap = document.createElement("div");
-      cap.className = "qr-payload";
-      cap.textContent = payloadFull;
-      tdQr.appendChild(cap);
-      const copyBtn = document.createElement("button");
-      copyBtn.type = "button";
-      copyBtn.className = "btn btn-mini copy-payload";
-      copyBtn.textContent = "Copy URL";
-      copyBtn.dataset.copy = payloadFull;
-      tdQr.appendChild(copyBtn);
-
-      const shortPath = "/s/" + link.code;
-
-      const tdCode = document.createElement("td");
-      const codeEl = document.createElement("code");
-      codeEl.textContent = link.code;
-      tdCode.appendChild(codeEl);
-      const divLink = document.createElement("div");
-      divLink.className = "stats";
-      const a = document.createElement("a");
-      a.href = shortPath;
-      a.target = "_blank";
-      a.rel = "noopener";
-      a.textContent = shortPath;
-      divLink.appendChild(a);
-      tdCode.appendChild(divLink);
-
-      const tdTarget = document.createElement("td");
-      const inp = document.createElement("input");
-      inp.className = "edit-target";
-      inp.type = "text";
-      inp.readOnly = true;
-      inp.dataset.code = link.code;
-      inp.dataset.originalTarget = link.target || "";
-      inp.value = link.target || "";
-
-      const tdHits = document.createElement("td");
-      tdHits.className = "stats";
-      tdHits.textContent = String(link.hit_count || 0);
-
-      const tdLast = document.createElement("td");
-      tdLast.className = "stats";
-      tdLast.textContent = fmtTs(link.last_hit_at);
-
-      const tdAct = document.createElement("td");
-      tdAct.className = "actions-cell";
-      const bEdit = document.createElement("button");
-      bEdit.type = "button";
-      bEdit.className = "btn edit-row";
-      bEdit.dataset.code = link.code;
-      bEdit.textContent = "Edit";
-      const bSave = document.createElement("button");
-      bSave.type = "button";
-      bSave.className = "btn btn-primary save-row hidden";
-      bSave.dataset.code = link.code;
-      bSave.textContent = "Save";
-      const bCancel = document.createElement("button");
-      bCancel.type = "button";
-      bCancel.className = "btn cancel-edit hidden";
-      bCancel.dataset.code = link.code;
-      bCancel.textContent = "Cancel";
-      const bDel = document.createElement("button");
-      bDel.type = "button";
-      bDel.className = "btn del-row";
-      bDel.dataset.code = link.code;
-      bDel.textContent = "Delete";
-      tdAct.appendChild(bEdit);
-      tdAct.appendChild(bSave);
-      tdAct.appendChild(bCancel);
-      tdAct.appendChild(bDel);
-
-      tr.appendChild(tdQr);
-      tr.appendChild(tdCode);
-      tdTarget.appendChild(inp);
-      tr.appendChild(tdTarget);
-      tr.appendChild(tdHits);
-      tr.appendChild(tdLast);
-      tr.appendChild(tdAct);
-      return tr;
-    }
-
-    function revokeQrBlobUrls() {
-      tbody.querySelectorAll("img.qr-preview-img").forEach((img) => {
-        if (img.src && img.src.startsWith("blob:")) URL.revokeObjectURL(img.src);
-      });
-    }
-
-    async function fillQrPreviewImages() {
-      const tok = getToken();
-      const imgs = tbody.querySelectorAll("img.qr-preview-img");
-      for (const img of imgs) {
-        const code = img.dataset.code;
-        if (!code || !tok) continue;
-        try {
-          let r = await fetch("/api/admin/links/" + encodeURIComponent(code) + "/art.png", {
-            headers: { "X-Admin-Token": tok },
-          });
-          if (!r.ok) {
-            r = await fetch("/api/admin/links/" + encodeURIComponent(code) + "/qr.png", {
-              headers: { "X-Admin-Token": tok },
-            });
-          }
-          if (!r.ok) {
-            img.alt = "—";
-            continue;
-          }
-          const blob = await r.blob();
-          img.src = URL.createObjectURL(blob);
-          img.alt = "QR";
-        } catch (_) {
-          img.alt = "—";
-        }
-      }
     }
 
     async function loadList() {
-      reloadBtn.disabled = true;
-      reloadBtn.setAttribute("aria-busy", "true");
       try {
-        revokeQrBlobUrls();
-        setMsg(listMsg, "Loading…", null);
-        tbody.innerHTML = "";
-        try {
-          const cfg = await api("/api/admin/config");
-          const base =
-            cfg && cfg.public_base_url ? String(cfg.public_base_url).replace(/\/$/, "") : "";
-          const links = await api("/api/admin/links");
-          if (!links.length) {
-            setMsg(
-              listMsg,
-              "No links yet. Generator: Short link + Save — Manage in Admin, then Generate.",
-              null,
-            );
-            return;
-          }
-          setMsg(listMsg, "", null);
-          links.forEach((l) => {
-            const payloadFull = base + "/s/" + l.code;
-            tbody.appendChild(row(l, payloadFull));
-          });
-          await fillQrPreviewImages();
-        } catch (e) {
-          if ((e.message || "").includes("403") || (e.message || "").toLowerCase().includes("invalid")) {
-            clearSession();
-            showLogin();
-            setMsg(
-            loginMsg,
-            "Sign in again (invalid or outdated token).",
-            false,
-          );
-            return;
-          }
-          setMsg(listMsg, e.message || String(e), false);
-        }
-      } finally {
-        reloadBtn.disabled = false;
-        reloadBtn.removeAttribute("aria-busy");
+        allLinks = await api("/api/admin/links");
+        renderTable(allLinks);
+      } catch (e) {
+        showToast(e.message, "err");
       }
     }
 
+    searchInput.addEventListener("input", (e) => {
+      const q = e.target.value.toLowerCase();
+      const filtered = allLinks.filter(l => l.code.toLowerCase().includes(q) || l.target.toLowerCase().includes(q));
+      renderTable(filtered);
+    });
+
+    exportBtn.addEventListener("click", () => {
+      const csv = "Code,Target,Hits,Last Scan\n" + allLinks.map(l => `${l.code},${l.target},${l.hit_count},"${l.last_hit_at ? new Date(l.last_hit_at * 1000).toISOString() : ''}"`).join("\n");
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `qrender_links_${Date.now()}.csv`;
+      a.click();
+    });
+
     tbody.addEventListener("click", async (e) => {
-      const t = e.target;
-      const copySrc = t.closest("[data-copy]");
-      if (copySrc && copySrc.getAttribute("data-copy")) {
+      const tr = e.target.closest("tr");
+      if (!tr) return;
+      const code = tr.querySelector("code").textContent;
+      const inp = tr.querySelector(".edit-target");
+
+      if (e.target.classList.contains("edit-btn")) {
+        inp.readOnly = false;
+        inp.focus();
+        e.target.classList.add("hidden");
+        tr.querySelector(".save-btn").classList.remove("hidden");
+      } else if (e.target.classList.contains("save-btn")) {
         try {
-          await navigator.clipboard.writeText(copySrc.getAttribute("data-copy") || "");
-          setMsg(listMsg, "Copied to clipboard.", true);
-        } catch (_) {
-          setMsg(listMsg, "Clipboard failed.", false);
-        }
-        return;
-      }
-      if (t.classList.contains("edit-row")) {
-        const tr = t.closest("tr");
-        if (tr) setRowEditing(tr, true);
-        return;
-      }
-      if (t.classList.contains("cancel-edit")) {
-        const tr = t.closest("tr");
-        if (tr) setRowEditing(tr, false);
-        return;
-      }
-      if (t.classList.contains("save-row")) {
-        const code = t.getAttribute("data-code");
-        const inp = tbody.querySelector('input.edit-target[data-code="' + code + '"]');
-        if (!inp) return;
-        try {
-          await api("/api/admin/links/" + encodeURIComponent(code), {
+          await api(`/api/admin/links/${code}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ target: inp.value.trim() }),
+            body: JSON.stringify({ target: inp.value.trim() })
           });
-          setMsg(listMsg, "Updated " + code + ".", true);
+          showToast("Updated " + code);
           loadList();
-        } catch (err) {
-          setMsg(listMsg, err.message || String(err), false);
-        }
-        return;
-      }
-      if (t.classList.contains("del-row")) {
-        const code = t.getAttribute("data-code");
-        if (!confirm("Delete /s/" + code + " permanently?")) return;
+        } catch (err) { showToast(err.message, "err"); }
+      } else if (e.target.classList.contains("del-btn")) {
+        if (!confirm("Delete link?")) return;
         try {
-          await api("/api/admin/links/" + encodeURIComponent(code), { method: "DELETE" });
-          setMsg(listMsg, "Deleted " + code + ".", true);
+          await api(`/api/admin/links/${code}`, { method: "DELETE" });
+          showToast("Deleted " + code);
           loadList();
-        } catch (err) {
-          setMsg(listMsg, err.message || String(err), false);
-        }
-        return;
+        } catch (err) { showToast(err.message, "err"); }
       }
     });
 
     reloadBtn.addEventListener("click", loadList);
+    loginPassword.addEventListener("keydown", e => e.key === "Enter" && loginBtn.click());
 
-    tbody.addEventListener("keydown", (e) => {
-      if (e.key !== "Escape") return;
-      const inp = e.target;
-      if (!inp || !inp.classList.contains("edit-target")) return;
-      const tr = inp.closest("tr");
-      if (tr && tr.dataset.editing === "1") {
-        e.preventDefault();
-        setRowEditing(tr, false);
-      }
-    });
-
-    tryResume().finally(() => {
-      if (!loginScreen.classList.contains("hidden")) {
-        loginPassword.focus();
-      }
-    });
+    if (getToken()) { showDashboard(); loadList(); } else showLogin();
   </script>
 </body>
 </html>
