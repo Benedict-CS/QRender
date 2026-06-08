@@ -1189,6 +1189,7 @@ def build_art_qr_photo_microdot(
     finder_dark_rgb: tuple[int, int, int] = (0, 0, 0),
     finder_light_rgb: tuple[int, int, int] = (255, 255, 255),
     finder_decor: bool = False,
+    photo_wash: float = 0.0,
     prepixelate_max: int = 0,
     crop_anchor_x: float = 0.5,
     crop_anchor_y: float = 0.5,
@@ -1227,6 +1228,14 @@ def build_art_qr_photo_microdot(
         fit_mode,
         cover_zoom,
     )
+
+    if abs(photo_wash) > 1e-4:
+        if photo_wash > 0:
+            white = Image.new("RGB", fitted.size, (255, 255, 255))
+            fitted = Image.blend(fitted, white, min(0.8, photo_wash))
+        else:
+            black = Image.new("RGB", fitted.size, (0, 0, 0))
+            fitted = Image.blend(fitted, black, min(0.8, abs(photo_wash)))
 
     base = fitted.convert("RGBA")
     overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
@@ -1447,6 +1456,7 @@ def build_art_qr(
             finder_dark_rgb=fd,
             finder_light_rgb=fl,
             finder_decor=finder_decor,
+            photo_wash=photo_wash,
             prepixelate_max=prepixelate_max,
             crop_anchor_x=crop_anchor_x,
             crop_anchor_y=crop_anchor_y,
