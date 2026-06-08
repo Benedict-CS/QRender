@@ -68,14 +68,11 @@ def _index_html() -> str:
     template = (_STATIC_DIR / "index.html").read_text(encoding="utf-8")
     repo = (os.environ.get("PUBLIC_GITHUB_URL") or "").strip() or _DEFAULT_GITHUB_REPO_URL
     safe = html.escape(repo)
-    badge = (
-        f'<a class="nav-link" href="{safe}" target="_blank" rel="noopener noreferrer">'
-        "GitHub</a>"
-    )
+    # Header GitHub icon link
     gh_icon = (
-        f'<a class="github-icon-link footer-github" href="{safe}" '
+        f'<a class="github-icon-link" href="{safe}" '
         'target="_blank" rel="noopener noreferrer" title="QRender on GitHub">'
-        '<span class="sr-only">QRender on GitHub</span>'
+        '<span class="sr-only">GitHub</span>'
         '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" '
         'viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
         '<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 '
@@ -87,7 +84,7 @@ def _index_html() -> str:
         "5.43.39.33.75.96.75 1.935 0 1.395-.015 2.52-.015 2.865 0 .315.225.69.825.57A12.02 12.02 0 0024 12"
         'c0-6.63-5.37-12-12-12z"/></svg></a>'
     )
-    return template.replace("{{GITHUB_LINK}}", badge).replace("{{GITHUB_FOOTER_ICON}}", gh_icon)
+    return template.replace("{{GITHUB_LINK}}", gh_icon)
 
 
 @app.get("/")
