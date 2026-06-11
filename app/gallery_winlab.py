@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import random
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -24,6 +25,7 @@ _IMAGES_KEY = '\\"images\\":'
 
 _cache_urls: list[str] | None = None
 _cache_expires: float = 0.0
+_cache_lock = threading.Lock()
 
 
 def _gallery_url() -> str:
@@ -105,21 +107,22 @@ def _parse_still_image_urls(html: str) -> list[str]:
 def list_still_image_urls(*, force_refresh: bool = False) -> list[str]:
     """Return direct Supabase public URLs for all non-video works."""
     global _cache_urls, _cache_expires
-    now = time.monotonic()
-    if not force_refresh and _cache_urls is not None and now < _cache_expires:
-        return list(_cache_urls)
-    try:
-        html = _fetch_html(_gallery_url())
-    except urllib.error.HTTPError as err:
-        raise RuntimeError(f"gallery HTTP {err.code}") from err
-    except urllib.error.URLError as err:
-        raise RuntimeError(f"gallery fetch failed: {err.reason}") from err
-    urls = _parse_still_image_urls(html)
-    if not urls:
-        raise RuntimeError("no still images found on gallery page")
-    _cache_urls = urls
-    _cache_expires = now + float(_cache_ttl_seconds())
-    return list(urls)
+    with _cache_lock:
+        now = time.monotonic()
+        if not force_refresh and _cache_urls is not None and now < _cache_expires:
+            return list(_cache_urls)
+        try:
+            html = _fetch_html(_gallery_url())
+        except urllib.error.HTTPError as err:
+            raise RuntimeError(f"gallery HTTP {err.code}") from err
+        except urllib.error.URLError as err:
+            raise RuntimeError(f"gallery fetch failed: {err.reason}") from err
+        urls = _parse_still_image_urls(html)
+        if not urls:
+            raise RuntimeError("no still images found on gallery page")
+        _cache_urls = urls
+        _cache_expires = now + float(_cache_ttl_seconds())
+        return list(urls)
 
 
 def random_still_image_url(*, force_refresh: bool = False) -> str:

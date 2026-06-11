@@ -6,6 +6,7 @@ from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 from typing import Annotated, cast
+from urllib.parse import quote
 
 from dotenv import load_dotenv
 
@@ -64,6 +65,7 @@ def _hex_to_rgb(value: str) -> tuple[int, int, int]:
 
 _STATIC_DIR = Path(__file__).resolve().parent / "static"
 _DEFAULT_GITHUB_REPO_URL = "https://github.com/Benedict-CS/QRender"
+_MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MiB cap for /qr/art image upload
 
 
 @lru_cache(maxsize=1)
@@ -107,10 +109,10 @@ def _effective_public_base(request: Request) -> str:
     return str(request.base_url).rstrip("/")
 
 
+@lru_cache(maxsize=256)
 def _admin_short_link_qr_png(payload: str) -> bytes:
     """Standard black-on-white QR PNG for admin preview (same encoded string as micro-dot export)."""
     import qrcode
-    from io import BytesIO
 
     qr = qrcode.QRCode(
         version=None,
@@ -306,9 +308,14 @@ async def qr_art(
     except ValueError as err:
         raise HTTPException(status_code=400, detail=str(err)) from err
 
-    uploaded = await image.read()
+    uploaded = await image.read(_MAX_UPLOAD_BYTES + 1)
     if not uploaded:
         raise HTTPException(status_code=400, detail="image file is empty")
+    if len(uploaded) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"image is too large (max {_MAX_UPLOAD_BYTES // (1024 * 1024)} MiB)",
+        )
 
     payload = content.strip()
     code: str | None = None
@@ -356,10 +363,13 @@ async def qr_art(
     buffer = BytesIO()
     output.save(buffer, format="PNG")
     buffer.seek(0)
+    # HTTP headers must be Latin-1; percent-encode so non-ASCII payloads
+    # (Chinese, emoji, etc.) don't crash the response.
+    header_payload = quote(payload[:512], safe="")
     return StreamingResponse(
         buffer,
         media_type="image/png",
-        headers={"X-QR-Encoded-Content": payload[:512]},
+        headers={"X-QR-Encoded-Content": header_payload},
     )
 
 
